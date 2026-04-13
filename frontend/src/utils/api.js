@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://docterappoinmentsystemmain.onrender.com';
 
 console.log('✅ API baseURL:', BASE_URL);
 
