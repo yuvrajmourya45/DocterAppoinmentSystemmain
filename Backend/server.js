@@ -25,12 +25,28 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // CORS Configuration
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+  'https://docter-appoinment-systemmain.vercel.app',
+];
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
+
+app.options('*', cors());
 
 app.use(express.json());
 
@@ -61,11 +77,12 @@ app.get("/api/doctors", async (req, res) => {
     const doctorsWithImageUrl = doctors.map(doc => {
       const obj = doc.toObject();
       if (obj.image) {
+        const baseUrl = process.env.BACKEND_URL || 'https://docterappoinmentsystemmain.onrender.com';
         if (obj.image.startsWith('http')) {
         } else if (obj.image.startsWith('/')) {
-          obj.image = `http://localhost:8000${obj.image}`;
+          obj.image = `${baseUrl}${obj.image}`;
         } else {
-          obj.image = `http://localhost:8000/uploads/${obj.image}`;
+          obj.image = `${baseUrl}/uploads/${obj.image}`;
         }
       }
       return { ...obj, available: obj.available !== undefined ? obj.available : true };
