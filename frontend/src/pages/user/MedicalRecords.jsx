@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { toast } from 'react-toastify';
-import { Upload, FileText, Trash2, Download, Calendar, FileCheck, AlertTriangle } from 'lucide-react';
+import { Upload, FileText, Trash2, Download, Calendar, FileCheck } from 'lucide-react';
 import { AppContext } from '../../context/AppContext';
 import API from '../../utils/api';
 
@@ -8,7 +8,6 @@ const MedicalRecords = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
-  const [confirmedAppointments, setConfirmedAppointments] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -37,27 +36,7 @@ const MedicalRecords = () => {
 
   useEffect(() => {
     fetchRecords();
-    fetchConfirmedAppointments();
   }, []);
-
-  const fetchConfirmedAppointments = async () => {
-    try {
-      const res = await API.get('/api/appointments', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const confirmed = res.data.filter(apt => 
-        apt.status === 'confirmed' || apt.status === 'completed'
-      );
-      setConfirmedAppointments(confirmed);
-    } catch (error) {
-      console.error('Error fetching appointments:', error);
-    }
-  };
-
-  const canModifyRecords = () => {
-    // Allow modification if no confirmed appointments exist
-    return confirmedAppointments.length === 0;
-  };
 
   const fetchRecords = async () => {
     try {
@@ -72,13 +51,6 @@ const MedicalRecords = () => {
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    
-    // Check if user can modify records
-    if (!canModifyRecords()) {
-      toast.error('Cannot upload medical records while you have confirmed appointments. You can upload new records after current appointments are completed.');
-      return;
-    }
-    
     if (!formData.file) {
       toast.error('Please select a file');
       return;
@@ -109,12 +81,6 @@ const MedicalRecords = () => {
   };
 
   const handleDelete = async (id) => {
-    // Check if user can modify records
-    if (!canModifyRecords()) {
-      toast.error('Cannot delete medical records while you have confirmed appointments. You can modify records after current appointments are completed.');
-      return;
-    }
-    
     if (!window.confirm('Delete this record?')) return;
     try {
       await API.delete(`/api/medical-records/${id}`, {
@@ -141,87 +107,6 @@ const MedicalRecords = () => {
           <p className="text-gray-600 text-lg">Manage your health documents securely</p>
         </div>
 
-        {/* Confirmed Appointments Warning */}
-        {!canModifyRecords() && (
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-400 rounded-xl p-6 mb-8 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="text-amber-600" size={20} />
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-amber-900 mb-2">Records Temporarily Locked</h3>
-                <div className="text-sm text-amber-800 space-y-2">
-                  <p className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-amber-600 rounded-full"></span>
-                    You have {confirmedAppointments.length} active appointment{confirmedAppointments.length > 1 ? 's' : ''}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-amber-600 rounded-full"></span>
-                    Records are protected during confirmed appointments
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-amber-600 rounded-full"></span>
-                    Upload new records after appointments are completed
-                  </p>
-                </div>
-                <div className="mt-4">
-                  <h4 className="font-semibold text-amber-900 mb-2">Active Appointments:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {confirmedAppointments.slice(0, 3).map((apt, index) => (
-                      <div key={index} className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-medium">
-                        {apt.date} • {apt.time} • {apt.status}
-                      </div>
-                    ))}
-                    {confirmedAppointments.length > 3 && (
-                      <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-medium">
-                        +{confirmedAppointments.length - 3} more
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Info Banner */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-8 shadow-sm">
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-blue-600 text-lg">💡</span>
-              </div>
-            </div>
-            <div>
-              <h3 className="font-bold text-blue-900 mb-2 text-lg">How Medical Records Work</h3>
-              <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-800">
-                <div className="space-y-2">
-                  <p className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
-                    Upload all medical documents here
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
-                    Doctors can access them during appointments
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <p className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
-                    Upload each document separately
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
-                    Records are shared across all appointments
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
@@ -230,15 +115,9 @@ const MedicalRecords = () => {
           </div>
           <button 
             onClick={() => setShowUpload(!showUpload)} 
-            disabled={!canModifyRecords()}
-            className={`inline-flex items-center gap-3 px-6 py-3 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 shadow-lg ${
-              !canModifyRecords() 
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed shadow-none transform-none' 
-                : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-xl'
-            }`}
+            className="inline-flex items-center gap-3 px-6 py-3 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 shadow-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-xl"
           >
-            <Upload size={20} /> 
-            {!canModifyRecords() ? 'Upload Temporarily Locked' : 'Upload New Record'}
+            <Upload size={20} /> Upload New Record
           </button>
         </div>
 
@@ -408,13 +287,8 @@ const MedicalRecords = () => {
                       </a>
                       <button 
                         onClick={() => handleDelete(record._id)} 
-                        disabled={!canModifyRecords()}
-                        className={`p-2 rounded-xl transition-colors ${
-                          !canModifyRecords()
-                            ? 'text-gray-400 cursor-not-allowed'
-                            : 'text-red-600 hover:bg-red-50'
-                        }`}
-                        title={!canModifyRecords() ? 'Cannot delete during confirmed appointments' : 'Delete record'}
+                        className="p-2 rounded-xl transition-colors text-red-600 hover:bg-red-50"
+                        title="Delete record"
                       >
                         <Trash2 size={16} />
                       </button>
