@@ -19,53 +19,16 @@ const MyAppointments = () => {
 
   // 🔄 Fetch appointments
   const fetchAppointments = async () => {
-    if (!user?._id) {
-      
-      return;
-    }
-    
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
+      if (!token) { navigate("/login"); return; }
       
-      const res = await API.get("/api/appointments",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await API.get("/api/appointments", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       
-      // Manually fetch doctor data for each appointment
-      const appointmentsWithDoctors = await Promise.all(
-        res.data.map(async (apt) => {
-          if (typeof apt.doctor === 'string' && apt.doctor.match(/^[0-9a-fA-F]{24}$/)) {
-            try {
-              const doctorRes = await API.get(`/api/doctor/profile/${apt.doctor}`);
-              return { ...apt, doctor: doctorRes.data };
-            } catch (err) {
-              
-              return apt;
-            }
-          }
-          return apt;
-        })
-      );
-      
-      // Check for status changes and show notifications
-      if (appointments.length > 0) {
-        appointmentsWithDoctors.forEach(newApt => {
-          const oldApt = appointments.find(old => old._id === newApt._id);
-          if (oldApt && oldApt.status !== newApt.status) {
-            const doctorName = newApt.doctor?.name || 'Doctor';
-            if (newApt.status === 'confirmed') {
-              showPopup(`✅ Your appointment with Dr. ${doctorName} has been CONFIRMED!`, "success");
-            } else if (newApt.status === 'rejected') {
-              showPopup(`❌ Your appointment with Dr. ${doctorName} has been REJECTED`, "error");
-            } else if (newApt.status === 'completed') {
-              showPopup(`🏥 Your appointment with Dr. ${doctorName} is COMPLETED`, "success");
-            }
-          }
-        });
-      }
-      
-      setAppointments(appointmentsWithDoctors);
+      setAppointments(res.data || []);
     } catch (err) {
       showPopup("Failed to fetch appointments", "error");
     } finally {
@@ -75,16 +38,11 @@ const MyAppointments = () => {
 
   useEffect(() => {
     fetchAppointments();
-  }, [user]);
+  }, []);
 
-  // Auto-refresh appointments every 2 seconds to check for updates
   useEffect(() => {
     if (!user?._id) return;
-    
-    const interval = setInterval(() => {
-      fetchAppointments();
-    }, 30000);
-    
+    const interval = setInterval(fetchAppointments, 30000);
     return () => clearInterval(interval);
   }, [user]);
 
@@ -132,7 +90,6 @@ const MyAppointments = () => {
     showPopup("Payment successful!", "success");
   };
 
-  if (!user) return <div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
 
   return (
