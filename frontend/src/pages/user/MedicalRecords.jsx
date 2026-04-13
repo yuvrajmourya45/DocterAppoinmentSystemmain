@@ -233,15 +233,13 @@ const MedicalRecords = () => {
               </div>
               <h3 className="text-2xl font-bold text-gray-600 mb-3">No Medical Records Yet</h3>
               <p className="text-gray-500 mb-6 max-w-md mx-auto">Upload your medical documents to share with doctors during consultations</p>
-              {canModifyRecords() && (
-                <button
+              <button
                   onClick={() => setShowUpload(true)}
                   className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all"
                 >
                   <Upload size={20} />
                   Upload Your First Record
                 </button>
-              )}
             </div>
           ) : (
             records.map((record) => (
