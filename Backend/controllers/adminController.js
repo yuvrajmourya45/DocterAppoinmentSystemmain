@@ -4,6 +4,7 @@ import User from "../models/UserModel.js";
 import DoctorModel from "../models/DoctorModel.js";
 import AppointmentModel from "../models/appointmentModel.js";
 import MedicalRecord from "../models/medicalRecordModel.js";
+import { uploadToCloudinary } from "../middleware/cloudinaryUpload.js";
 
 const adminCheck = (req) => req.user.role !== "admin" ? { error: true } : null;
 
@@ -156,7 +157,7 @@ export const addDoctor = async (req, res) => {
     const doc = await new DoctorModel({
       ...req.body,
       password: await bcryptjs.hash(req.body.password, 10),
-      image: req.file ? `/uploads/${req.file.filename}` : "",
+      image: req.file ? (await uploadToCloudinary(req.file.buffer, 'doctor-app')).secure_url : "",
       address: addr,
       workingHours,
       available: req.body.available === 'true' || req.body.available === true,
@@ -175,7 +176,7 @@ export const updateDoctor = async (req, res) => {
   try {
     if (adminCheck(req)?.error) return res.status(403).json({ message: "Admin only" });
     const data = { ...req.body };
-    if (req.file) data.image = `/uploads/${req.file.filename}`;
+    if (req.file) data.image = (await uploadToCloudinary(req.file.buffer, 'doctor-app')).secure_url;
     if (data.password) data.password = await bcryptjs.hash(data.password, 10);
     const doc = await DoctorModel.findByIdAndUpdate(req.params.id, data, { new: true });
     res.json({ message: "Updated", doctor: doc });

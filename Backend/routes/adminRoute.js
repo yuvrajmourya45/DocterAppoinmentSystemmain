@@ -1,7 +1,6 @@
 import express from "express";
-import multer from "multer";
-import path from "path";
 import authMiddleware from "../middleware/authMiddleware.js";
+import upload from "../middleware/cloudinaryUpload.js";
 import {
   loginAdmin, getAdminDetails, getDashboardStats, getAllAppointments,
   updateAppointmentStatus, cancelAppointment, getAllDoctors, toggleDoctorAvailability,
@@ -10,12 +9,6 @@ import {
 } from "../controllers/adminController.js";
 
 const router = express.Router();
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
-});
-const upload = multer({ storage });
 
 router.post("/login", loginAdmin);
 router.get("/me", authMiddleware, getAdminDetails);
