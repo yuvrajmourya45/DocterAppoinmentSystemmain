@@ -17,6 +17,8 @@ const AppointmentSchema = new mongoose.Schema({
   cancelledAt: { type: Date },
   cancelledBy: { type: String, enum: ['user', 'doctor', 'admin'] },
   cancellationReason: { type: String },
+  hasMedicalRecords: { type: Boolean, default: false },
+  medicalRecordsCount: { type: Number, default: 0 },
   prescription: {
     diagnosis: { type: String },
     medicines: [{

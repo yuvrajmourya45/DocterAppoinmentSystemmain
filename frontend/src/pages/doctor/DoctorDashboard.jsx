@@ -524,6 +524,18 @@ const DoctorDashboard = () => {
                           </div>
                         </div>
                         <div className="flex gap-2">
+                          {appointment.hasMedicalRecords && (
+                            <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold mb-2">
+                              <span>📋</span>
+                              <span>{appointment.medicalRecordsCount} Record{appointment.medicalRecordsCount > 1 ? 's' : ''}</span>
+                            </div>
+                          )}
+                          {!appointment.hasMedicalRecords && (
+                            <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs font-bold mb-2">
+                              <span>📄</span>
+                              <span>No Records</span>
+                            </div>
+                          )}
                           {appointment.status === 'pending' && (
                             <>
                               <button 
@@ -541,12 +553,23 @@ const DoctorDashboard = () => {
                             </>
                           )}
                           {appointment.status === 'confirmed' && (
-                            <button 
-                              onClick={() => handleAppointmentAction(appointment._id, 'completed')}
-                              className="w-full px-3 py-2 bg-blue-500 text-white rounded-lg text-xs font-bold hover:bg-blue-600 transition-colors"
-                            >
-                              Complete
-                            </button>
+                            <>
+                              <button 
+                                onClick={() => {
+                                  setSelectedPatient(appointment.user?._id);
+                                  setActiveTab('records');
+                                }}
+                                className="flex-1 px-3 py-2 bg-purple-500 text-white rounded-lg text-xs font-bold hover:bg-purple-600 transition-colors"
+                              >
+                                View Records
+                              </button>
+                              <button 
+                                onClick={() => handleAppointmentAction(appointment._id, 'completed')}
+                                className="flex-1 px-3 py-2 bg-blue-500 text-white rounded-lg text-xs font-bold hover:bg-blue-600 transition-colors"
+                              >
+                                Complete
+                              </button>
+                            </>
                           )}
                         </div>
                       </div>
@@ -582,6 +605,18 @@ const DoctorDashboard = () => {
                         <td className="p-4"><div className={`px-3 py-1 rounded-full text-xs font-bold uppercase inline-block ${appointment.status === 'completed' ? 'bg-green-100 text-green-700' : appointment.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>{appointment.status}</div></td>
                         <td className="p-4">
                           <div className="flex gap-2">
+                            {appointment.hasMedicalRecords && (
+                              <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                <span>📋</span>
+                                <span>{appointment.medicalRecordsCount} Record{appointment.medicalRecordsCount > 1 ? 's' : ''}</span>
+                              </div>
+                            )}
+                            {!appointment.hasMedicalRecords && (
+                              <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs font-bold">
+                                <span>📄</span>
+                                <span>No Records</span>
+                              </div>
+                            )}
                             {appointment.status === 'confirmed' && (
                               <button 
                                 onClick={() => {

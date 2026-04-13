@@ -70,7 +70,7 @@ export const bookAppointment = async (req, res) => {
       date,
       time,
       cancelled: false,
-      status: { $nin: ['completed', 'rejected'] } // Exclude completed and rejected appointments
+      status: { $nin: ['completed', 'rejected'] } 
     });
     if (existingAppointment) return res.status(400).json({ message: "This slot is already booked" });
 

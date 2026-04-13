@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { Upload, FileText, Trash2, Download, Calendar, FileCheck } from 'lucide-react';
+import { Upload, FileText, Trash2, Download, Calendar, FileCheck, AlertTriangle } from 'lucide-react';
+import { AppContext } from '../../context/AppContext';
 
 const MedicalRecords = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const [confirmedAppointments, setConfirmedAppointments] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -14,6 +16,7 @@ const MedicalRecords = () => {
     file: null
   });
 
+  const { getUserMedicalRecords } = useContext(AppContext);
   const token = localStorage.getItem('token');
 
   const getDocumentTypeLabel = (type) => {
@@ -34,7 +37,27 @@ const MedicalRecords = () => {
 
   useEffect(() => {
     fetchRecords();
+    fetchConfirmedAppointments();
   }, []);
+
+  const fetchConfirmedAppointments = async () => {
+    try {
+      const res = await axios.get('http://localhost:8000/api/appointments', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const confirmed = res.data.filter(apt => 
+        apt.status === 'confirmed' || apt.status === 'completed'
+      );
+      setConfirmedAppointments(confirmed);
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+    }
+  };
+
+  const canModifyRecords = () => {
+    // Allow modification if no confirmed appointments exist
+    return confirmedAppointments.length === 0;
+  };
 
   const fetchRecords = async () => {
     try {
@@ -49,6 +72,13 @@ const MedicalRecords = () => {
 
   const handleUpload = async (e) => {
     e.preventDefault();
+    
+    // Check if user can modify records
+    if (!canModifyRecords()) {
+      toast.error('Cannot upload medical records while you have confirmed appointments. You can upload new records after current appointments are completed.');
+      return;
+    }
+    
     if (!formData.file) {
       toast.error('Please select a file');
       return;
@@ -69,6 +99,8 @@ const MedicalRecords = () => {
       setShowUpload(false);
       setFormData({ title: '', description: '', documentType: 'lab_report', file: null });
       fetchRecords();
+      // Update context as well
+      getUserMedicalRecords();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Upload failed');
     } finally {
@@ -77,6 +109,12 @@ const MedicalRecords = () => {
   };
 
   const handleDelete = async (id) => {
+    // Check if user can modify records
+    if (!canModifyRecords()) {
+      toast.error('Cannot delete medical records while you have confirmed appointments. You can modify records after current appointments are completed.');
+      return;
+    }
+    
     if (!window.confirm('Delete this record?')) return;
     try {
       await axios.delete(`http://localhost:8000/api/medical-records/${id}`, {
@@ -84,155 +122,309 @@ const MedicalRecords = () => {
       });
       toast.success('Record deleted');
       fetchRecords();
+      // Update context as well
+      getUserMedicalRecords();
     } catch (error) {
       toast.error('Delete failed');
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      {/* Info Banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-        <h3 className="font-bold text-blue-900 mb-2">📋 How to Use Medical Records</h3>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Upload all your medical documents here (reports, X-rays, prescriptions)</li>
-          <li>• When you book an appointment, doctor can see these documents</li>
-          <li>• Upload each document separately (one at a time)</li>
-          <li>• You can upload multiple documents for different health issues</li>
-        </ul>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header Section */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg mb-4">
+            <FileText className="text-white" size={32} />
+          </div>
+          <h1 className="text-4xl font-black text-gray-900 mb-2">My Medical Records</h1>
+          <p className="text-gray-600 text-lg">Manage your health documents securely</p>
+        </div>
 
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">My Medical Records</h1>
-        <button onClick={() => setShowUpload(!showUpload)} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-          <Upload size={18} /> Upload Record
-        </button>
-      </div>
-
-      {showUpload && (
-        <form onSubmit={handleUpload} className="bg-white p-6 rounded-lg shadow mb-6">
-          <div className="mb-4">
-            <label className="block text-sm font-bold text-gray-700 mb-2">Title *</label>
-            <input 
-              type="text" 
-              placeholder="e.g., Blood Test Report, Chest X-Ray, Doctor Prescription" 
-              value={formData.title} 
-              onChange={(e) => setFormData({...formData, title: e.target.value})} 
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" 
-              required 
-            />
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-sm font-bold text-gray-700 mb-2">Description (Optional)</label>
-            <textarea 
-              placeholder="e.g., Blood test done on 15th Jan 2024, Sugar level normal" 
-              value={formData.description} 
-              onChange={(e) => setFormData({...formData, description: e.target.value})} 
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" 
-              rows="3" 
-            />
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-sm font-bold text-gray-700 mb-2">Document Type *</label>
-            <select 
-              value={formData.documentType} 
-              onChange={(e) => setFormData({...formData, documentType: e.target.value})} 
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="lab_report">🧪 Lab Report - Blood Test, Urine Test, Sugar Test</option>
-              <option value="xray">📷 X-Ray - Bone X-Ray, Chest X-Ray</option>
-              <option value="prescription">💊 Prescription - Medicine List from Doctor</option>
-              <option value="scan">🔬 Scan - CT Scan, MRI, Ultrasound, Sonography</option>
-              <option value="ecg">❤️ ECG/EKG - Heart Test Report</option>
-              <option value="vaccination">💉 Vaccination Record - Vaccine Certificates</option>
-              <option value="discharge_summary">🏥 Discharge Summary - Hospital Discharge Papers</option>
-              <option value="medical_history">🩺 Medical History - Previous Illness, Surgery Records</option>
-              <option value="allergy_report">⚠️ Allergy Report - Medicine/Food Allergies</option>
-              <option value="other">📄 Other - Any Other Medical Document</option>
-            </select>
-            <p className="text-xs text-gray-500 mt-1">Select the type of medical document you are uploading</p>
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-sm font-bold text-gray-700 mb-2">Upload File *</label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-              <input 
-                type="file" 
-                onChange={(e) => setFormData({...formData, file: e.target.files[0]})} 
-                className="w-full" 
-                accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" 
-                required 
-              />
-              <p className="text-xs text-gray-500 mt-2">Supported: JPG, PNG, PDF, DOC, DOCX (Max 10MB)</p>
-            </div>
-          </div>
-          
-          <button 
-            type="submit" 
-            disabled={loading} 
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 disabled:bg-gray-400"
-          >
-            {loading ? 'Uploading...' : 'Upload Document'}
-          </button>
-        </form>
-      )}
-
-      <div className="grid gap-4">
-        {records.length === 0 ? (
-          <div className="bg-white rounded-xl p-12 text-center border-2 border-dashed border-gray-200">
-            <FileText className="mx-auto text-gray-300 mb-4" size={64} />
-            <h3 className="text-xl font-bold text-gray-600 mb-2">No Medical Records Yet</h3>
-            <p className="text-gray-500">Upload your medical documents to share with doctors</p>
-          </div>
-        ) : (
-          records.map((record) => (
-            <div key={record._id} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4 flex-1">
-                  <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-xl shadow-lg">
-                    <FileText className="text-white" size={28} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-gray-800 mb-1">{record.title}</h3>
-                    {record.description && (
-                      <p className="text-sm text-gray-600 mb-2">{record.description}</p>
-                    )}
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <FileCheck size={14} />
-                        {getDocumentTypeLabel(record.documentType)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar size={14} />
-                        {new Date(record.uploadDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </span>
-                    </div>
-                  </div>
+        {/* Confirmed Appointments Warning */}
+        {!canModifyRecords() && (
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-400 rounded-xl p-6 mb-8 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="text-amber-600" size={20} />
                 </div>
-                <div className="flex gap-2">
-                  <a 
-                    href={`http://localhost:8000/uploads/medical-records/${record.file}`} 
-                    target="_blank" 
-                    rel="noreferrer" 
-                    className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    title="Download"
-                  >
-                    <Download size={20} />
-                  </a>
-                  <button 
-                    onClick={() => handleDelete(record._id)} 
-                    className="p-2.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Delete"
-                  >
-                    <Trash2 size={20} />
-                  </button>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-amber-900 mb-2">Records Temporarily Locked</h3>
+                <div className="text-sm text-amber-800 space-y-2">
+                  <p className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-amber-600 rounded-full"></span>
+                    You have {confirmedAppointments.length} active appointment{confirmedAppointments.length > 1 ? 's' : ''}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-amber-600 rounded-full"></span>
+                    Records are protected during confirmed appointments
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-amber-600 rounded-full"></span>
+                    Upload new records after appointments are completed
+                  </p>
+                </div>
+                <div className="mt-4">
+                  <h4 className="font-semibold text-amber-900 mb-2">Active Appointments:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {confirmedAppointments.slice(0, 3).map((apt, index) => (
+                      <div key={index} className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-medium">
+                        {apt.date} • {apt.time} • {apt.status}
+                      </div>
+                    ))}
+                    {confirmedAppointments.length > 3 && (
+                      <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-medium">
+                        +{confirmedAppointments.length - 3} more
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          ))
+          </div>
         )}
+
+        {/* Info Banner */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-8 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-blue-600 text-lg">💡</span>
+              </div>
+            </div>
+            <div>
+              <h3 className="font-bold text-blue-900 mb-2 text-lg">How Medical Records Work</h3>
+              <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-800">
+                <div className="space-y-2">
+                  <p className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                    Upload all medical documents here
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                    Doctors can access them during appointments
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                    Upload each document separately
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                    Records are shared across all appointments
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Header Actions */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Your Documents</h2>
+            <p className="text-gray-600 mt-1">{records.length} record{records.length !== 1 ? 's' : ''} uploaded</p>
+          </div>
+          <button 
+            onClick={() => setShowUpload(!showUpload)} 
+            disabled={!canModifyRecords()}
+            className={`inline-flex items-center gap-3 px-6 py-3 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 shadow-lg ${
+              !canModifyRecords() 
+                ? 'bg-gray-200 text-gray-500 cursor-not-allowed shadow-none transform-none' 
+                : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-xl'
+            }`}
+          >
+            <Upload size={20} /> 
+            {!canModifyRecords() ? 'Upload Temporarily Locked' : 'Upload New Record'}
+          </button>
+        </div>
+
+        {/* Upload Form */}
+        {showUpload && (
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 mb-8 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+              <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                <Upload size={24} />
+                Upload Medical Document
+              </h3>
+              <p className="text-blue-100 text-sm mt-1">Add a new medical record to your profile</p>
+            </div>
+            
+            <form onSubmit={handleUpload} className="p-6 space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-3">Document Title *</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., Blood Test Report, Chest X-Ray" 
+                    value={formData.title} 
+                    onChange={(e) => setFormData({...formData, title: e.target.value})} 
+                    className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                    required 
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-3">Document Type *</label>
+                  <select 
+                    value={formData.documentType} 
+                    onChange={(e) => setFormData({...formData, documentType: e.target.value})} 
+                    className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  >
+                    <option value="lab_report">🧪 Lab Report</option>
+                    <option value="xray">📷 X-Ray</option>
+                    <option value="prescription">💊 Prescription</option>
+                    <option value="scan">🔬 Scan (CT/MRI/Ultrasound)</option>
+                    <option value="ecg">❤️ ECG/EKG</option>
+                    <option value="vaccination">💉 Vaccination Record</option>
+                    <option value="discharge_summary">🏥 Discharge Summary</option>
+                    <option value="medical_history">🩺 Medical History</option>
+                    <option value="allergy_report">⚠️ Allergy Report</option>
+                    <option value="other">📄 Other</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-3">Description (Optional)</label>
+                <textarea 
+                  placeholder="e.g., Blood test done on 15th Jan 2024, Sugar level normal" 
+                  value={formData.description} 
+                  onChange={(e) => setFormData({...formData, description: e.target.value})} 
+                  className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                  rows="3" 
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-3">Upload File *</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 transition-colors">
+                  <div className="flex flex-col items-center">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                      <Upload className="text-blue-600" size={24} />
+                    </div>
+                    <input 
+                      type="file" 
+                      onChange={(e) => setFormData({...formData, file: e.target.files[0]})} 
+                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+                      accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" 
+                      required 
+                    />
+                    <p className="text-xs text-gray-500 mt-2">Supported: JPG, PNG, PDF, DOC, DOCX (Max 10MB)</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex gap-4 pt-4">
+                <button 
+                  type="submit" 
+                  disabled={loading} 
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4 rounded-xl font-bold hover:shadow-lg transform hover:scale-105 transition-all disabled:opacity-50 disabled:transform-none"
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Uploading...
+                    </div>
+                  ) : (
+                    'Upload Document'
+                  )}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setShowUpload(false)}
+                  className="px-6 py-4 border border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Records Grid */}
+        <div className="grid gap-6">
+          {records.length === 0 ? (
+            <div className="bg-white rounded-2xl p-12 text-center border-2 border-dashed border-gray-200 shadow-sm">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FileText className="text-gray-400" size={40} />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-600 mb-3">No Medical Records Yet</h3>
+              <p className="text-gray-500 mb-6 max-w-md mx-auto">Upload your medical documents to share with doctors during consultations</p>
+              {canModifyRecords() && (
+                <button
+                  onClick={() => setShowUpload(true)}
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all"
+                >
+                  <Upload size={20} />
+                  Upload Your First Record
+                </button>
+              )}
+            </div>
+          ) : (
+            records.map((record) => (
+              <div key={record._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 overflow-hidden group">
+                <div className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-4 flex-1">
+                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                        <FileText className="text-white" size={24} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">{record.title}</h3>
+                        {record.description && (
+                          <p className="text-gray-600 mb-3 line-clamp-2">{record.description}</p>
+                        )}
+                        <div className="flex flex-wrap items-center gap-4 text-sm">
+                          <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
+                            <FileCheck size={14} />
+                            <span className="font-medium">{getDocumentTypeLabel(record.documentType)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-500">
+                            <Calendar size={14} />
+                            <span>{new Date(record.uploadDate).toLocaleDateString('en-IN', { 
+                              day: 'numeric', 
+                              month: 'short', 
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                      <a 
+                        href={`http://localhost:8000/uploads/medical-records/${record.file}`} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm"
+                      >
+                        <Download size={16} />
+                        <span className="hidden sm:inline">Download</span>
+                      </a>
+                      <button 
+                        onClick={() => handleDelete(record._id)} 
+                        disabled={!canModifyRecords()}
+                        className={`p-2 rounded-xl transition-colors ${
+                          !canModifyRecords()
+                            ? 'text-gray-400 cursor-not-allowed'
+                            : 'text-red-600 hover:bg-red-50'
+                        }`}
+                        title={!canModifyRecords() ? 'Cannot delete during confirmed appointments' : 'Delete record'}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

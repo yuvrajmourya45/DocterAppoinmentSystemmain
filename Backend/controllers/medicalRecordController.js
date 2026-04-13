@@ -1,10 +1,24 @@
 import MedicalRecord from '../models/medicalRecordModel.js';
+import Appointment from '../models/appointmentModel.js';
 
 // Upload medical record
 export const uploadRecord = async (req, res) => {
   try {
     const { title, description, documentType } = req.body;
     const userId = req.user.id;
+
+    // Check if user has any confirmed appointments
+    const confirmedAppointments = await Appointment.find({
+      user: userId,
+      status: { $in: ['confirmed', 'completed'] },
+      cancelled: false
+    });
+
+    if (confirmedAppointments.length > 0) {
+      return res.status(403).json({ 
+        message: 'Cannot upload medical records while you have confirmed appointments. You can upload new records after current appointments are completed.' 
+      });
+    }
 
     if (!req.file) {
       return res.status(400).json({ message: 'Please upload a file' });
@@ -42,6 +56,19 @@ export const deleteRecord = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
+
+    // Check if user has any confirmed appointments
+    const confirmedAppointments = await Appointment.find({
+      user: userId,
+      status: { $in: ['confirmed', 'completed'] },
+      cancelled: false
+    });
+
+    if (confirmedAppointments.length > 0) {
+      return res.status(403).json({ 
+        message: 'Cannot delete medical records while you have confirmed appointments. You can modify records after current appointments are completed.' 
+      });
+    }
 
     const record = await MedicalRecord.findOne({ _id: id, user: userId });
     if (!record) {

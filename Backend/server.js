@@ -14,7 +14,6 @@ import doctorRouter from "./routes/doctorRoute.js";
 import userRoute from "./routes/userRoute.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
-import medicalRecordRoutes from "./routes/medicalRecordRoutes.js";
 
 // Models
 import doctorModel from "./models/DoctorModel.js";
@@ -30,7 +29,7 @@ app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Cache-Control', 'Pragma']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
 
 app.use(express.json());
@@ -38,8 +37,6 @@ app.use(express.json());
 // Uploads Folder Setup
 const uploadDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-const medicalRecordsDir = path.join(__dirname, "uploads/medical-records");
-if (!fs.existsSync(medicalRecordsDir)) fs.mkdirSync(medicalRecordsDir, { recursive: true });
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // MongoDB Connection
@@ -56,19 +53,6 @@ app.use("/api/admin", adminRouter);
 app.use("/api/doctor", doctorRouter);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/notifications", notificationRoutes);
-app.use("/api/medical-records", medicalRecordRoutes);
-
-// User profile endpoint for doctor to view patient info
-app.get("/api/user/profile/:userId", async (req, res) => {
-  try {
-    const User = (await import("./models/UserModel.js")).default;
-    const user = await User.findById(req.params.userId).select('-password');
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // Public Doctors Endpoint
 app.get("/api/doctors", async (req, res) => {
