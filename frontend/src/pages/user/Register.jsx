@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import API from "../../utils/api";
+import API from "../api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
@@ -26,7 +26,6 @@ const Register = () => {
 
       toast.success(res.data.message || "✅ Registration Successful!");
 
-      // 2) Immediately login the user (frontend auto-login)
       try {
         const loginRes = await axios.post("http://localhost:8000/api/auth/login", {
           email,
