@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { doctors } from "../../assets/assets_frontend/assets";
 import API from "../../utils/api";
 
 const MyAppointments = () => {
@@ -21,23 +20,17 @@ const MyAppointments = () => {
   // 🔄 Fetch appointments
   const fetchAppointments = async () => {
     if (!user?._id) {
-      console.log('❌ No user ID found');
+      
       return;
     }
     
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      console.log('🔑 Token:', token ? 'exists' : 'missing');
-      console.log('👤 User ID:', user._id);
-      console.log('🌐 API URL:', `${getBackendUrl()}/api/appointments`);
       
       const res = await API.get("/api/appointments",
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      console.log('📥 Response data:', res.data);
-      console.log('📊 Appointments count:', res.data.length);
       
       // Manually fetch doctor data for each appointment
       const appointmentsWithDoctors = await Promise.all(
@@ -47,15 +40,13 @@ const MyAppointments = () => {
               const doctorRes = await API.get(`/api/doctor/profile/${apt.doctor}`);
               return { ...apt, doctor: doctorRes.data };
             } catch (err) {
-              console.log('Failed to fetch doctor:', err);
+              
               return apt;
             }
           }
           return apt;
         })
       );
-      
-      console.log('📋 Final appointments with doctors:', appointmentsWithDoctors);
       
       // Check for status changes and show notifications
       if (appointments.length > 0) {
@@ -172,47 +163,11 @@ const MyAppointments = () => {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
               {appointments.map((item) => {
-                console.log('🔍 Appointment item:', item);
-                console.log('👨⚕️ Doctor data:', item.doctor);
-                console.log('📝 Doctor type:', typeof item.doctor);
-                console.log('📋 Doctor keys:', item.doctor ? Object.keys(item.doctor) : 'null');
-                
-                const doctorId = typeof item.doctor === 'string' ? item.doctor : item.doctor?._id;
-                const demoDoctor = doctors.find(d => d._id === doctorId);
-                
-                // Get doctor name - prioritize populated doctor data
-                let doctorName = "Unknown Doctor";
-                if (item.doctor && typeof item.doctor === 'object' && item.doctor.name) {
-                  doctorName = item.doctor.name;
-                  console.log('✅ Using populated doctor name:', doctorName);
-                } else if (demoDoctor?.name) {
-                  doctorName = demoDoctor.name;
-                  console.log('✅ Using demo doctor name:', doctorName);
-                } else {
-                  doctorName = "Doctor";
-                  console.log('❌ Fallback to generic name');
-                }
-                
-                // Format doctor name
-                const formattedName = doctorName.startsWith("Dr.") ? doctorName : `Dr. ${doctorName}`;
-                
-                // Get speciality
-                const speciality = item.doctor?.speciality || demoDoctor?.speciality || item.speciality || "General";
-                
-                // Get image - prioritize populated doctor data
-                let image = "https://via.placeholder.com/300x400/e2e8f0/64748b?text=Doctor";
-                if (item.doctor && typeof item.doctor === 'object' && item.doctor.image) {
-                  // server now returns absolute URL, but handle relative just in case
-                  image = item.doctor.image.startsWith('http')
-                    ? item.doctor.image
-                    : `${API.defaults.baseURL}${item.doctor.image.startsWith('/') ? '' : '/'}${item.doctor.image}`;
-                } else if (demoDoctor?.image) {
-                  image = demoDoctor.image.startsWith('http')
-                    ? demoDoctor.image
-                    : `${API.defaults.baseURL}${demoDoctor.image.startsWith('/') ? '' : '/'}${demoDoctor.image}`;
-                }
-                
-                console.log('📋 Final data:', { doctorName: formattedName, speciality, image });
+                const doctorName = item.doctor?.name ? (item.doctor.name.startsWith('Dr.') ? item.doctor.name : `Dr. ${item.doctor.name}`) : 'Doctor';
+                const speciality = item.doctor?.speciality || item.speciality || 'General';
+                const image = item.doctor?.image
+                  ? item.doctor.image.startsWith('http') ? item.doctor.image : `${API.defaults.baseURL}${item.doctor.image.startsWith('/') ? '' : '/'}${item.doctor.image}`
+                  : 'https://via.placeholder.com/300x400/e2e8f0/64748b?text=Doctor';
 
                 return (
                   <div
@@ -223,7 +178,7 @@ const MyAppointments = () => {
                       <div className="w-full h-48 sm:h-64 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
                         <img
                           src={image}
-                          alt={formattedName}
+                          alt={doctorName}
                           className="h-full w-full object-cover"
                           onError={(e) => {
                             e.target.src = "https://via.placeholder.com/300x400/e2e8f0/64748b?text=Doctor";
@@ -246,7 +201,7 @@ const MyAppointments = () => {
                     </div>
 
                     <div className="p-3 sm:p-5">
-                      <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">{formattedName}</h3>
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">{doctorName}</h3>
                       <p className="text-sm text-gray-500 mb-3 sm:mb-4">{speciality}</p>
                       
                       <div className="space-y-2 mb-4">
