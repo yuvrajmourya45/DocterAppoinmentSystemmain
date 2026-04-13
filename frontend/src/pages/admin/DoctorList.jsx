@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Trash2, Edit, Search, UserCheck, UserX } from "lucide-react";
+import API_URL from "../../utils/api";
 
 export default function DoctorList() {
     const [doctors, setDoctors] = useState([]);
@@ -11,7 +12,7 @@ export default function DoctorList() {
     const fetchDoctors = async () => {
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get("http://localhost:8000/api/admin/doctors", {
+            const res = await axios.get(`${API_URL}/api/admin/doctors`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setDoctors(res.data);
@@ -25,7 +26,7 @@ export default function DoctorList() {
     const toggleAvailability = async (id) => {
         try {
             const token = localStorage.getItem("token");
-            await axios.post(`http://localhost:8000/api/admin/change-availability`, { docId: id }, {
+            await axios.post(`${API_URL}/api/admin/change-availability`, { docId: id }, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             toast.success("Availability updated");
@@ -38,7 +39,7 @@ export default function DoctorList() {
     const toggleVerification = async (id) => {
         try {
             const token = localStorage.getItem("token");
-            await axios.post(`http://localhost:8000/api/admin/verify-doctor`, { docId: id }, {
+            await axios.post(`${API_URL}/api/admin/verify-doctor`, { docId: id }, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             toast.success("Verification status updated");
@@ -52,7 +53,7 @@ export default function DoctorList() {
         if (!window.confirm("Are you sure you want to delete this doctor?")) return;
         try {
             const token = localStorage.getItem("token");
-            await axios.delete(`http://localhost:8000/api/admin/doctors/${id}`, {
+            await axios.delete(`${API_URL}/api/admin/doctors/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             toast.success("Doctor deleted successfully");
@@ -112,7 +113,7 @@ export default function DoctorList() {
                                         <td className="p-2 sm:p-4">
                                             <div className="flex items-center gap-2 sm:gap-3">
                                                 <img
-                                                    src={doctor.image?.startsWith('http') ? doctor.image : `http://localhost:8000${doctor.image}`}
+                                                    src={doctor.image?.startsWith('http') ? doctor.image : `${API_URL}${doctor.image}`}
                                                     alt={doctor.name}
                                                     className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border border-gray-100 flex-shrink-0"
                                                     onError={(e) => e.target.src = "https://via.placeholder.com/40"}

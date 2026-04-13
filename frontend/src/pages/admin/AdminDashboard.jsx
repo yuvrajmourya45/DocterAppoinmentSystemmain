@@ -28,6 +28,7 @@ import AdminReports from "./AdminReports";
 import AdminHistory from "./AdminHistory";
 import AdminPatientDetails from "./AdminPatientDetails";
 import NotificationCenter from "../../components/NotificationCenter";
+import API_URL from "../../utils/api";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -58,8 +59,8 @@ export default function AdminDashboard() {
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
         const [adminRes, statsRes] = await Promise.all([
-          axios.get("http://localhost:8000/api/admin/me", config),
-          axios.get("http://localhost:8000/api/admin/stats", config),
+          axios.get(`${API_URL}/api/admin/me`, config),
+          axios.get(`${API_URL}/api/admin/stats`, config),
         ]);
 
         setAdmin(adminRes.data);

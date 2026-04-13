@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Upload, FileText, Trash2, Download, Calendar, FileCheck, AlertTriangle } from 'lucide-react';
 import { AppContext } from '../../context/AppContext';
+import API_URL from '../../utils/api';
 
 const MedicalRecords = () => {
   const [records, setRecords] = useState([]);
@@ -42,7 +43,7 @@ const MedicalRecords = () => {
 
   const fetchConfirmedAppointments = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/appointments', {
+      const res = await axios.get(`${API_URL}/api/appointments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const confirmed = res.data.filter(apt => 
@@ -61,7 +62,7 @@ const MedicalRecords = () => {
 
   const fetchRecords = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/medical-records/my-records', {
+      const res = await axios.get(`${API_URL}/api/medical-records/my-records`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRecords(res.data);
@@ -92,7 +93,7 @@ const MedicalRecords = () => {
     data.append('file', formData.file);
 
     try {
-      await axios.post('http://localhost:8000/api/medical-records/upload', data, {
+      await axios.post(`${API_URL}/api/medical-records/upload`, data, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       });
       toast.success('Medical record uploaded successfully');
@@ -117,7 +118,7 @@ const MedicalRecords = () => {
     
     if (!window.confirm('Delete this record?')) return;
     try {
-      await axios.delete(`http://localhost:8000/api/medical-records/${id}`, {
+      await axios.delete(`${API_URL}/api/medical-records/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Record deleted');
@@ -398,7 +399,7 @@ const MedicalRecords = () => {
                     </div>
                     <div className="flex items-center gap-2 ml-4">
                       <a 
-                        href={`http://localhost:8000/uploads/medical-records/${record.file}`} 
+                        href={`${API_URL}/uploads/medical-records/${record.file}`} 
                         target="_blank" 
                         rel="noreferrer" 
                         className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm"

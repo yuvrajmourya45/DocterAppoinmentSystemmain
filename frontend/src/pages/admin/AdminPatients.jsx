@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Users } from "lucide-react";
+import API_URL from "../../utils/api";
 
 export default function AdminPatients() {
   const [patients, setPatients] = useState([]);
@@ -10,7 +11,7 @@ export default function AdminPatients() {
     try {
       const token = localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get("http://localhost:8000/api/admin/users", config);
+      const res = await axios.get(`${API_URL}/api/admin/users`, config);
       setPatients(res.data);
     } catch (err) {
       console.log("Error loading patients", err);

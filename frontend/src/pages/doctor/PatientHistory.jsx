@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Calendar, User, Filter, TrendingUp, Clock, CheckCircle, XCircle } from "lucide-react";
+import API_URL from "../../utils/api";
 
 const PatientHistory = ({ doctorId }) => {
   const [history, setHistory] = useState([]);
@@ -22,7 +23,7 @@ const PatientHistory = ({ doctorId }) => {
       if (filters.patientName) params.append('patientName', filters.patientName);
       if (filters.status) params.append('status', filters.status);
       
-      const res = await axios.get(`http://localhost:8000/api/doctor/history/${doctorId}?${params}`);
+      const res = await axios.get(`${API_URL}/api/doctor/history/${doctorId}?${params}`);
       setHistory(res.data.appointments);
       setStats(res.data.stats);
     } catch (err) {

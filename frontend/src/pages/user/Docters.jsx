@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppContext } from "../../context/AppContext";
+import API_URL from "../../utils/api";
 
 const Docters = () => {
   const { speciality } = useParams();
@@ -49,7 +50,7 @@ const Docters = () => {
                   <div className="w-full h-48 sm:h-56 flex items-center justify-center bg-gray-50">
                     <img
                       src={item.image?.startsWith('http') ? item.image.replace('/uploads//uploads/', '/uploads/') : 
-                           item.image ? `http://localhost:8000${item.image}` : 
+                           item.image ? `${API_URL}${item.image}` : 
                            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkRvY3RvciBJbWFnZTwvdGV4dD48L3N2Zz4='}
                       alt={item.name}
                       className="max-h-full object-contain"

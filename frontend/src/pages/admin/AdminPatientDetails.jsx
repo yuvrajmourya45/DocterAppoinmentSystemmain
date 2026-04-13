@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ArrowLeft, FileText, Calendar, Trash2, Download, User, Activity, Heart, Pill } from 'lucide-react';
 import { toast } from 'react-toastify';
+import API_URL from '../../utils/api';
 
 const AdminPatientDetails = ({ patientId, onBack }) => {
   const [patient, setPatient] = useState(null);
@@ -19,10 +20,10 @@ const AdminPatientDetails = ({ patientId, onBack }) => {
       const token = localStorage.getItem('token');
       
       const [recordsRes, appointmentsRes] = await Promise.all([
-        axios.get(`http://localhost:8000/api/admin/patients/${patientId}/medical-records`, {
+        axios.get(`${API_URL}/api/admin/patients/${patientId}/medical-records`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get(`http://localhost:8000/api/admin/patients/${patientId}/appointments`, {
+        axios.get(`${API_URL}/api/admin/patients/${patientId}/appointments`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -42,7 +43,7 @@ const AdminPatientDetails = ({ patientId, onBack }) => {
     
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:8000/api/admin/patients/${patientId}/records/${recordId}`, {
+      await axios.delete(`${API_URL}/api/admin/patients/${patientId}/records/${recordId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Record deleted');
@@ -157,7 +158,7 @@ const AdminPatientDetails = ({ patientId, onBack }) => {
                   </div>
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <a 
-                      href={`http://localhost:8000/uploads/medical-records/${record.file}`} 
+                      href={`${API_URL}/uploads/medical-records/${record.file}`} 
                       target="_blank" 
                       className="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-colors"
                       title="Download"
