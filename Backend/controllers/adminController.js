@@ -6,13 +6,16 @@ import AppointmentModel from "../models/appointmentModel.js";
 import MedicalRecord from "../models/medicalRecordModel.js";
 import { uploadToCloudinary } from "../middleware/cloudinaryUpload.js";
 
+const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
+const BASE_URL = process.env.BACKEND_URL || "https://docterappoinmentsystemmain.onrender.com";
+
 const adminCheck = (req) => req.user.role !== "admin" ? { error: true } : null;
 
 // ==================== ADMIN LOGIN =========================
 export const loginAdmin = async (req, res) => {
   try {
     if (req.body.email === process.env.ADMIN_EMAIL && req.body.password === process.env.ADMIN_PASSWORD) {
-      const token = jwt.sign({ role: "admin" }, process.env.JWT_SECRET, { expiresIn: "7d" });
+      const token = jwt.sign({ role: "admin" }, JWT_SECRET, { expiresIn: "7d" });
       return res.json({ message: "Login ok", token, user: { role: "admin", email: process.env.ADMIN_EMAIL } });
     }
     res.status(401).json({ message: "Invalid" });
@@ -39,7 +42,7 @@ export const getDashboardStats = async (req, res) => {
         if (doc) {
           const docObj = doc.toObject();
           if (docObj.image && !docObj.image.startsWith('http')) {
-            docObj.image = `http://localhost:8000${docObj.image.startsWith('/') ? '' : '/'}${docObj.image}`;
+            docObj.image = `${BASE_URL}${docObj.image.startsWith('/') ? '' : '/'}${docObj.image}`;
           }
           obj.doctor = docObj;
         }

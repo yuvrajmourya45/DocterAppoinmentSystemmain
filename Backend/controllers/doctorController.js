@@ -3,13 +3,16 @@ import jwt from "jsonwebtoken";
 import DoctorModel from "../models/DoctorModel.js";
 import Appointment from "../models/appointmentModel.js";
 
+const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
+const BASE_URL = process.env.BACKEND_URL || "https://docterappoinmentsystemmain.onrender.com";
+
 // ================== DOCTOR LOGIN ===================
 export const loginDoctor = async (req, res) => {
   try {
     const doc = await DoctorModel.findOne({ email: req.body.email });
     if (!doc || !(await bcrypt.compare(req.body.password, doc.password)))
       return res.status(401).json({ message: "Invalid" });
-    const token = jwt.sign({ id: doc._id, role: "doctor" }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign({ id: doc._id, role: "doctor" }, JWT_SECRET, { expiresIn: "7d" });
     res.json({ message: "Login ok", token, doctor: doc });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -23,7 +26,7 @@ export const getDoctorProfile = async (req, res) => {
     if (!doc) return res.status(404).json({ message: "Not found" });
     const obj = doc.toObject();
     if (obj.image && !obj.image.startsWith("http")) {
-      obj.image = `http://localhost:8000${obj.image.startsWith("/") ? "" : "/"}${obj.image}`;
+      obj.image = `${BASE_URL}${obj.image.startsWith("/") ? "" : "/"}${obj.image}`;
     }
     res.json(obj);
   } catch (err) {
