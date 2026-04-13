@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import {
@@ -28,7 +27,7 @@ import AdminReports from "./AdminReports";
 import AdminHistory from "./AdminHistory";
 import AdminPatientDetails from "./AdminPatientDetails";
 import NotificationCenter from "../../components/NotificationCenter";
-import API_URL from "../../utils/api";
+import API from "../../utils/api";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -59,8 +58,8 @@ export default function AdminDashboard() {
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
         const [adminRes, statsRes] = await Promise.all([
-          axios.get(`${API_URL}/api/admin/me`, config),
-          axios.get(`${API_URL}/api/admin/stats`, config),
+          API.get("/api/admin/me", config),
+          API.get("/api/admin/stats", config),
         ]);
 
         setAdmin(adminRes.data);

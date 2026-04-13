@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { ArrowLeft, FileText, Calendar, Trash2, Download, User, Activity, Heart, Pill } from 'lucide-react';
 import { toast } from 'react-toastify';
 import API_URL from '../../utils/api';
@@ -20,10 +19,10 @@ const AdminPatientDetails = ({ patientId, onBack }) => {
       const token = localStorage.getItem('token');
       
       const [recordsRes, appointmentsRes] = await Promise.all([
-        axios.get(`${API_URL}/api/admin/patients/${patientId}/medical-records`, {
+        API.get(`/api/admin/patients/${patientId}/medical-records`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get(`${API_URL}/api/admin/patients/${patientId}/appointments`, {
+        API.get(`/api/admin/patients/${patientId}/appointments`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -43,7 +42,7 @@ const AdminPatientDetails = ({ patientId, onBack }) => {
     
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/admin/patients/${patientId}/records/${recordId}`, {
+      await API.delete(`/api/admin/patients/${patientId}/records/${recordId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Record deleted');

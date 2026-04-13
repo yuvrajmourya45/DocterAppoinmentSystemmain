@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import API_URL from "../../utils/api";
+import API from "../../utils/api";
 
 const MyProfile = () => {
   const [userData, setUserData] = useState(null);
@@ -29,8 +28,8 @@ const MyProfile = () => {
     if (!token) return navigate("/login");
 
     try {
-      const res = await axios.put(
-        `${API_URL}/api/auth/profile/${userData._id}`,
+      const res = await API.put(
+        `/api/auth/profile/${userData._id}`,
         formData,
         {
           headers: {
@@ -65,7 +64,7 @@ const MyProfile = () => {
                 profilePic
                   ? URL.createObjectURL(profilePic)
                   : userData.profilePic
-                  ? `${API_URL}${userData.profilePic}`
+                  ? `${API.defaults.baseURL}${userData.profilePic}`
                   : "https://via.placeholder.com/120"
               }
               alt="Profile"

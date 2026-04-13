@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { Upload, X, Save, Plus, Trash2, Coffee, Utensils } from "lucide-react";
-import API_URL from "../../utils/api";
+import API from "../../utils/api";
 
 export default function AddDoctor() {
     const [image, setImage] = useState(null);
@@ -60,7 +59,7 @@ export default function AddDoctor() {
 
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.post(`${API_URL}/api/admin/add-doctor`, data, {
+            const res = await API.post("/api/admin/add-doctor", data, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "multipart/form-data",

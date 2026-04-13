@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
@@ -75,8 +74,8 @@ const DoctorDashboard = () => {
     try {
       setLoading(true);
       const [docRes, apptRes] = await Promise.all([
-        axios.get(`${API_URL}/api/doctor/profile/${doctorId}`),
-        axios.get(`${API_URL}/api/appointments/doctor/${doctorId}`)
+        API.get(`/api/doctor/profile/${doctorId}`),
+        API.get(`/api/appointments/doctor/${doctorId}`)
       ]);
       setDoctor(docRes.data);
       setAvailable(docRes.data.available ?? true);
@@ -138,7 +137,7 @@ const DoctorDashboard = () => {
       
       for (const patient of patientsArray) {
         try {
-          const res = await axios.get(`${API_URL}/api/medical-records/user/${patient._id}`, {
+          const res = await API.get(`/api/medical-records/user/${patient._id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (res.data && res.data.length > 0) {
@@ -157,7 +156,7 @@ const DoctorDashboard = () => {
 
   const toggleAvailability = async () => {
     try {
-      const res = await axios.put(
+      const res = await API.put(
         `${API_URL}/api/doctor/availability/${doctorId}`,
         { available: !available },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -180,13 +179,13 @@ const DoctorDashboard = () => {
     try {
       let response;
       if (status === 'completed') {
-        response = await axios.patch(
+        response = await API.patch(
           `${API_URL}/api/doctor/complete/${appointmentId}`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
-        response = await axios.patch(
+        response = await API.patch(
           `${API_URL}/api/appointments/${appointmentId}/status`,
           { status },
           { headers: { Authorization: `Bearer ${token}` } }
@@ -210,7 +209,7 @@ const DoctorDashboard = () => {
         else updateData.append(key, formData[key]);
       });
       if (imageFile) updateData.append('image', imageFile);
-      const res = await axios.put(
+      const res = await API.put(
         `${API_URL}/api/doctor/profile/${doctorId}`,
         updateData,
         { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` } }

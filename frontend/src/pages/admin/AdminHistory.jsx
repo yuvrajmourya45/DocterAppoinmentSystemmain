@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { Calendar, User, Filter, TrendingUp, Clock, CheckCircle, XCircle, Search } from "lucide-react";
 import API_URL from "../../utils/api";
 
@@ -19,7 +18,7 @@ const AdminHistory = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const res = await axios.get(`${API_URL}/api/admin/appointments`, {
+      const res = await API.get(`/api/admin/appointments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

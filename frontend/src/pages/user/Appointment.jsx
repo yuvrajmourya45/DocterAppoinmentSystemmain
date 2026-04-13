@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { AppContext } from "../../context/AppContext";
 import { hello } from "../../assets/assets_frontend/assets";
 import RelatedDoctors from "../../components/RelatedDocters";
-import API_URL from "../../utils/api";
+import API from "../../utils/api";
 
 const Appointment = () => {
   const { docId } = useParams();
@@ -25,7 +25,7 @@ const Appointment = () => {
     if (!token) return;
     
     try {
-      const res = await fetch(`${API_URL}/api/appointments`, {
+      const res = await fetch(`${API.defaults.baseURL}/api/appointments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const appointments = await res.json();
@@ -82,7 +82,7 @@ const Appointment = () => {
     // Fetch booked slots for this doctor
     const fetchBookedSlots = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/appointments/doctor/${docInfo._id}`);
+        const res = await fetch(`${API.defaults.baseURL}/api/appointments/doctor/${docInfo._id}`);
         const data = await res.json();
         const booked = data.filter(apt => !apt.cancelled && apt.status !== 'rejected' && apt.status !== 'completed')
           .map(apt => `${apt.date}-${apt.time}`);

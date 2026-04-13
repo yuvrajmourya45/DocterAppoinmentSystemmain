@@ -1,5 +1,13 @@
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+import axios from 'axios';
 
-export const getBackendUrl = () => API_URL;
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
-export default API_URL;
+console.log('✅ API baseURL:', BASE_URL);
+
+const API = axios.create({
+  baseURL: BASE_URL,
+});
+
+export const getBackendUrl = () => BASE_URL;
+
+export default API;

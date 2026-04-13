@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { Trash2, Edit, Search, UserCheck, UserX } from "lucide-react";
 import API_URL from "../../utils/api";
@@ -12,7 +11,7 @@ export default function DoctorList() {
     const fetchDoctors = async () => {
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get(`${API_URL}/api/admin/doctors`, {
+            const res = await API.get(`/api/admin/doctors`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setDoctors(res.data);
@@ -26,7 +25,7 @@ export default function DoctorList() {
     const toggleAvailability = async (id) => {
         try {
             const token = localStorage.getItem("token");
-            await axios.post(`${API_URL}/api/admin/change-availability`, { docId: id }, {
+            await API.post(`/api/admin/change-availability`, { docId: id }, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             toast.success("Availability updated");
@@ -39,7 +38,7 @@ export default function DoctorList() {
     const toggleVerification = async (id) => {
         try {
             const token = localStorage.getItem("token");
-            await axios.post(`${API_URL}/api/admin/verify-doctor`, { docId: id }, {
+            await API.post(`/api/admin/verify-doctor`, { docId: id }, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             toast.success("Verification status updated");
@@ -53,7 +52,7 @@ export default function DoctorList() {
         if (!window.confirm("Are you sure you want to delete this doctor?")) return;
         try {
             const token = localStorage.getItem("token");
-            await axios.delete(`${API_URL}/api/admin/doctors/${id}`, {
+            await API.delete(`/api/admin/doctors/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             toast.success("Doctor deleted successfully");

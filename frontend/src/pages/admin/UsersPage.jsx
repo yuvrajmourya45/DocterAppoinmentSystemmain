@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { Users, Plus, Edit3, Trash2, X, Search, Mail, Key, FileText } from "lucide-react";
 import API_URL from "../../utils/api";
@@ -26,7 +25,7 @@ export default function UsersPage({ onViewPatient }) {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/api/admin/users`, config);
+      const res = await API.get(`/api/admin/users`, config);
       setUsers(res.data || []);
     } catch (err) {
       toast.error("Failed to load users");
@@ -39,10 +38,10 @@ export default function UsersPage({ onViewPatient }) {
     e.preventDefault();
     try {
       if (editing) {
-        await axios.put(`${API_URL}/api/admin/users/${editing._id}`, form, config);
+        await API.put(`/api/admin/users/${editing._id}`, form, config);
         toast.success("User updated successfully");
       } else {
-        await axios.post(`${API_URL}/api/admin/users`, form, config);
+        await API.post(`/api/admin/users`, form, config);
         toast.success("User added successfully");
       }
       fetchUsers();
@@ -57,7 +56,7 @@ export default function UsersPage({ onViewPatient }) {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await axios.delete(`${API_URL}/api/admin/users/${id}`, config);
+      await API.delete(`/api/admin/users/${id}`, config);
       toast.success("User deleted");
       fetchUsers();
     } catch (err) {

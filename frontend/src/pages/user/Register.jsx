@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
-import API_URL from "../../utils/api";
+import API from "../../utils/api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +18,7 @@ const Register = () => {
     setLoading(true);
     try {
       // 1) Create user
-      const res = await axios.post(`${API_URL}/api/auth/register`, {
+      const res = await API.post("/api/auth/register", {
         name,
         email,
         password,
@@ -29,7 +28,7 @@ const Register = () => {
 
       // 2) Immediately login the user (frontend auto-login)
       try {
-        const loginRes = await axios.post(`${API_URL}/api/auth/login`, {
+        const loginRes = await API.post("/api/auth/login", {
           email,
           password,
         });

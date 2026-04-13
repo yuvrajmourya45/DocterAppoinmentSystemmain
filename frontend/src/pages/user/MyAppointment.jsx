@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { doctors } from "../../assets/assets_frontend/assets";
-import { getBackendUrl } from "../../utils/api";
-import API_URL from "../../utils/api";
+import API from "../../utils/api";
 
 const MyAppointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -34,8 +32,7 @@ const MyAppointments = () => {
       console.log('👤 User ID:', user._id);
       console.log('🌐 API URL:', `${getBackendUrl()}/api/appointments`);
       
-      const res = await axios.get(
-        `${getBackendUrl()}/api/appointments`,
+      const res = await API.get("/api/appointments",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -47,7 +44,7 @@ const MyAppointments = () => {
         res.data.map(async (apt) => {
           if (typeof apt.doctor === 'string' && apt.doctor.match(/^[0-9a-fA-F]{24}$/)) {
             try {
-              const doctorRes = await axios.get(`${getBackendUrl()}/api/doctor/profile/${apt.doctor}`);
+              const doctorRes = await API.get(`/api/doctor/profile/${apt.doctor}`);
               return { ...apt, doctor: doctorRes.data };
             } catch (err) {
               console.log('Failed to fetch doctor:', err);
@@ -116,7 +113,7 @@ const MyAppointments = () => {
     if (!window.confirm(confirmMessage)) return;
     
     try {
-      const response = await axios.patch(`${getBackendUrl()}/api/appointments/${id}/cancel`, {}, {
+      const response = await API.patch(`/api/appointments/${id}/cancel`, {}, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       
@@ -208,11 +205,11 @@ const MyAppointments = () => {
                   // server now returns absolute URL, but handle relative just in case
                   image = item.doctor.image.startsWith('http')
                     ? item.doctor.image
-                    : `${API_URL}${item.doctor.image.startsWith('/') ? '' : '/'}${item.doctor.image}`;
+                    : `${API.defaults.baseURL}${item.doctor.image.startsWith('/') ? '' : '/'}${item.doctor.image}`;
                 } else if (demoDoctor?.image) {
                   image = demoDoctor.image.startsWith('http')
                     ? demoDoctor.image
-                    : `${API_URL}${demoDoctor.image.startsWith('/') ? '' : '/'}${demoDoctor.image}`;
+                    : `${API.defaults.baseURL}${demoDoctor.image.startsWith('/') ? '' : '/'}${demoDoctor.image}`;
                 }
                 
                 console.log('📋 Final data:', { doctorName: formattedName, speciality, image });

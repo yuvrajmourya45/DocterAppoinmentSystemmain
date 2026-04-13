@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { BarChart3, Users, Stethoscope, Calendar, TrendingUp } from "lucide-react";
 import API_URL from "../../utils/api";
 
@@ -16,9 +15,9 @@ export default function AdminReports() {
       const token = localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const [doc, pat, app] = await Promise.all([
-        axios.get(`${API_URL}/api/admin/doctors`, config),
-        axios.get(`${API_URL}/api/admin/users`, config),
-        axios.get(`${API_URL}/api/admin/appointments`, config)
+        API.get(`/api/admin/doctors`, config),
+        API.get(`/api/admin/users`, config),
+        API.get(`/api/admin/appointments`, config)
       ]);
 
       setStats({

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { Calendar, CheckCircle, XCircle, Clock, MoreVertical, Check, X } from "lucide-react";
-import API_URL from "../../utils/api";
+import API from "../../utils/api";
 
 export default function AdminAppointments() {
   const [appointments, setAppointments] = useState([]);
@@ -11,7 +10,7 @@ export default function AdminAppointments() {
   const loadAppointments = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`${API_URL}/api/admin/appointments`, {
+      const res = await API.get("/api/admin/appointments", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAppointments(res.data.appointments || []);
@@ -25,7 +24,7 @@ export default function AdminAppointments() {
   const updateStatus = async (id, status) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${API_URL}/api/admin/appointment-status`,
+      await API.post("/api/admin/appointment-status",
         { appointmentId: id, status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -40,7 +39,7 @@ export default function AdminAppointments() {
     if (!window.confirm("Are you sure you want to cancel this appointment?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${API_URL}/api/admin/cancel-appointment`,
+      await API.post("/api/admin/cancel-appointment",
         { appointmentId: id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -108,8 +107,8 @@ export default function AdminAppointments() {
                                 a.doctor?.image?.startsWith('http') 
                                   ? a.doctor.image 
                                   : a.doctor?.image?.startsWith('/') 
-                                  ? `${API_URL}${a.doctor.image}`
-                                    : `${API_URL}/uploads/${a.doctor?.image}`
+                                  ? `${API.defaults.baseURL}${a.doctor.image}`
+                                    : `${API.defaults.baseURL}/uploads/${a.doctor?.image}`
                               }
                               className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover border border-gray-100"
                               alt=""

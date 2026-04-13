@@ -1,6 +1,8 @@
 import React, { createContext, useState, useEffect } from "react";
-import axios from "axios";
+import API from "../utils/api";
 import { doctors as localDoctors } from "../assets/assets_frontend/assets";
+
+console.log("✅ VITE_BACKEND_URL:", import.meta.env.VITE_BACKEND_URL);
 
 export const AppContext = createContext();
 
@@ -12,7 +14,7 @@ const AppContextProvider = ({ children }) => {
 
   const getDoctorsData = async () => {
     try {
-      const { data } = await axios.get(`${backendUrl}/api/doctors`);
+      const { data } = await API.get("/api/doctors");
       console.log('Doctors data from backend:', data);
       if (data && data.length > 0) {
         setDoctors(data);
@@ -32,7 +34,7 @@ const AppContextProvider = ({ children }) => {
     if (!token) return;
     
     try {
-      const { data } = await axios.get(`${backendUrl}/api/medical-records/my-records`, {
+      const { data } = await API.get("/api/medical-records/my-records", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUserMedicalRecords(data || []);
@@ -55,7 +57,7 @@ const AppContextProvider = ({ children }) => {
         medicalRecordsCount: userMedicalRecords.length
       };
 
-      const response = await axios.post(`${backendUrl}/api/appointments`, appointmentPayload, {
+      const response = await API.post("/api/appointments", appointmentPayload, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
