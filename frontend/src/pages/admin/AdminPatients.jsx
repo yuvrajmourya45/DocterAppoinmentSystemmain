@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Users } from "lucide-react";
-import API_URL from "../../utils/api";
+import API from "../../utils/api";
 
 export default function AdminPatients() {
   const [patients, setPatients] = useState([]);

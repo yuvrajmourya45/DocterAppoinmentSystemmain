@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { BarChart3, Users, Stethoscope, Calendar, TrendingUp } from "lucide-react";
-import API_URL from "../../utils/api";
+import API from "../../utils/api";
 
 export default function AdminReports() {
   const [stats, setStats] = useState({

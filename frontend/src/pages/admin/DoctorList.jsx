@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Trash2, Edit, Search, UserCheck, UserX } from "lucide-react";
-import API_URL from "../../utils/api";
+import API from "../../utils/api";
 
 export default function DoctorList() {
     const [doctors, setDoctors] = useState([]);
@@ -112,7 +112,7 @@ export default function DoctorList() {
                                         <td className="p-2 sm:p-4">
                                             <div className="flex items-center gap-2 sm:gap-3">
                                                 <img
-                                                    src={doctor.image?.startsWith('http') ? doctor.image : `${API_URL}${doctor.image}`}
+                                                    src={doctor.image?.startsWith('http') ? doctor.image : `${API.defaults.baseURL}${doctor.image}`}
                                                     alt={doctor.name}
                                                     className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border border-gray-100 flex-shrink-0"
                                                     onError={(e) => e.target.src = "https://via.placeholder.com/40"}

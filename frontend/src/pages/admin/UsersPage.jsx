@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Users, Plus, Edit3, Trash2, X, Search, Mail, Key, FileText } from "lucide-react";
-import API_URL from "../../utils/api";
+import API from "../../utils/api";
 
 export default function UsersPage({ onViewPatient }) {
   const [users, setUsers] = useState([]);

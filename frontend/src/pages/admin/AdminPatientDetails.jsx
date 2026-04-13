@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, FileText, Calendar, Trash2, Download, User, Activity, Heart, Pill } from 'lucide-react';
 import { toast } from 'react-toastify';
-import API_URL from '../../utils/api';
+import API from '../../utils/api';
 
 const AdminPatientDetails = ({ patientId, onBack }) => {
   const [patient, setPatient] = useState(null);

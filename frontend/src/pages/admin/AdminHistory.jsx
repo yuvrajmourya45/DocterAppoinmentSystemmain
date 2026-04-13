@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Calendar, User, Filter, TrendingUp, Clock, CheckCircle, XCircle, Search } from "lucide-react";
-import API_URL from "../../utils/api";
+import API from "../../utils/api";
 
 const AdminHistory = () => {
   const [history, setHistory] = useState([]);
