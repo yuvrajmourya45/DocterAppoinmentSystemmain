@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import API from '../utils/api';
 import { FileText, Download, X, Calendar, FileCheck, Loader, User, Mail, Phone, MapPin } from 'lucide-react';
 
 const PatientMedicalRecords = ({ patientId, onClose }) => {
@@ -31,7 +31,7 @@ const PatientMedicalRecords = ({ patientId, onClose }) => {
 
   const fetchPatientInfo = async () => {
     try {
-      const res = await axios.get(`http://localhost:8000/api/user/profile/${patientId}`, {
+      const res = await API.get(`/api/user/profile/${patientId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPatientInfo(res.data);
@@ -43,7 +43,7 @@ const PatientMedicalRecords = ({ patientId, onClose }) => {
   const fetchRecords = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:8000/api/medical-records/user/${patientId}`, {
+      const res = await API.get(`/api/medical-records/user/${patientId}`, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Cache-Control': 'no-cache',
@@ -165,7 +165,7 @@ const PatientMedicalRecords = ({ patientId, onClose }) => {
                         </div>
                       </div>
                       <a 
-                        href={`http://localhost:8000/uploads/medical-records/${record.file}`} 
+                        href={`${API.defaults.baseURL}/uploads/medical-records/${record.file}`} 
                         target="_blank" 
                         rel="noreferrer" 
                         className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"

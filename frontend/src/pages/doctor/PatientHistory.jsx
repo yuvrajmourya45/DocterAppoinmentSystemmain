@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Calendar, User, Filter, TrendingUp, Clock, CheckCircle, XCircle } from "lucide-react";
-import API_URL from "../../utils/api";
+import API from "../../utils/api";
 
 const PatientHistory = ({ doctorId }) => {
   const [history, setHistory] = useState([]);

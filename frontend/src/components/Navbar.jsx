@@ -95,7 +95,7 @@ const Navbar = () => {
       if (user.profilePic.startsWith("http")) {
         return user.profilePic;
       } else {
-        return `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'}${user.profilePic.startsWith('/') ? '' : '/'}${user.profilePic}`;
+        return `${import.meta.env.VITE_BACKEND_URL || 'https://docterappoinmentsystemmain.onrender.com'}${user.profilePic.startsWith('/') ? '' : '/'}${user.profilePic}`;
       }
     }
     return hello.profile_pic;

@@ -20,7 +20,7 @@ import NotificationCenter from "../../components/NotificationCenter";
 import { useNotifications } from "../../hooks/useNotifications";
 import PatientHistory from "./PatientHistory";
 import PatientMedicalRecords from "../../components/PatientMedicalRecords";
-import API_URL from "../../utils/api";
+import API from "../../utils/api";
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
@@ -45,8 +45,8 @@ const DoctorDashboard = () => {
     if (!img) return null;
     if (typeof img !== 'string') return null;
     if (img.startsWith('http')) return img;
-    if (img.startsWith('/')) return `${API_URL}${img}`;
-    return `${API_URL}/uploads/${img}`;
+    if (img.startsWith('/')) return `${API.defaults.baseURL}${img}`;
+    return `${API.defaults.baseURL}/uploads/${img}`;
   };
 
   useEffect(() => {
@@ -157,7 +157,7 @@ const DoctorDashboard = () => {
   const toggleAvailability = async () => {
     try {
       const res = await API.put(
-        `${API_URL}/api/doctor/availability/${doctorId}`,
+        `/api/doctor/availability/${doctorId}`,
         { available: !available },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -180,13 +180,13 @@ const DoctorDashboard = () => {
       let response;
       if (status === 'completed') {
         response = await API.patch(
-          `${API_URL}/api/doctor/complete/${appointmentId}`,
+          `/api/doctor/complete/${appointmentId}`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
         response = await API.patch(
-          `${API_URL}/api/appointments/${appointmentId}/status`,
+          `/api/appointments/${appointmentId}/status`,
           { status },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -210,7 +210,7 @@ const DoctorDashboard = () => {
       });
       if (imageFile) updateData.append('image', imageFile);
       const res = await API.put(
-        `${API_URL}/api/doctor/profile/${doctorId}`,
+        `/api/doctor/profile/${doctorId}`,
         updateData,
         { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` } }
       );
