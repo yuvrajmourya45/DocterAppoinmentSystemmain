@@ -26,6 +26,7 @@ const MyAppointments = () => {
       });
       setAppointments(res.data || []);
     } catch (err) {
+      console.error("FULL ERROR:", err.response || err);
       setError("Failed to fetch appointments. Please try again.");
     } finally {
       setLoading(false);
