@@ -1,23 +1,13 @@
-import axios from "axios";
+import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://docterappoinmentsystemmain.onrender.com';
 
-if (!BASE_URL) {
-  console.error("❌ VITE_BACKEND_URL is not defined");
-}
+console.log('✅ API baseURL:', BASE_URL);
 
-// Axios instance
 const API = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true, 
 });
 
-API.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error("API Error:", error);
-    return Promise.reject(error);
-  }
-);
+export const getBackendUrl = () => BASE_URL;
 
 export default API;
