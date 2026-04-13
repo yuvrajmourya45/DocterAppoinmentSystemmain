@@ -102,7 +102,14 @@ export const getUserAppointments = async (req, res) => {
         const aptObj = apt.toObject();
         if (typeof aptObj.doctor === 'string' && aptObj.doctor.match(/^[0-9a-fA-F]{24}$/)) {
           const doctor = await DoctorModel.findById(aptObj.doctor).select('name speciality image fees degree');
-          if (doctor) aptObj.doctor = doctor.toObject();
+        if (doctor) {
+            const docObj = doctor.toObject();
+            if (docObj.image && !docObj.image.startsWith('http')) {
+              const baseUrl = process.env.BACKEND_URL || 'https://docterappoinmentsystemmain.onrender.com';
+              docObj.image = docObj.image.startsWith('/') ? `${baseUrl}${docObj.image}` : `${baseUrl}/uploads/${docObj.image}`;
+            }
+            aptObj.doctor = docObj;
+          }
         }
         return aptObj;
       })

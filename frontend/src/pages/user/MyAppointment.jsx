@@ -83,7 +83,7 @@ const MyAppointments = () => {
     
     const interval = setInterval(() => {
       fetchAppointments();
-    }, 2000); // Check every 2 seconds
+    }, 30000);
     
     return () => clearInterval(interval);
   }, [user]);
