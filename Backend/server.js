@@ -105,6 +105,17 @@ app.get("/api/debug/appointments", async (req, res) => {
   }
 });
 
+// Debug Endpoint - check env vars
+app.get("/api/debug", (req, res) => {
+  res.json({
+    jwt_secret_set: !!process.env.JWT_SECRET,
+    admin_email_set: !!process.env.ADMIN_EMAIL,
+    mongo_set: !!process.env.MONGO_URI,
+    node_env: process.env.NODE_ENV,
+    version: "2.0"
+  });
+});
+
 // Server Start
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
