@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import API from "../api";
+import API from "../../utils/api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";

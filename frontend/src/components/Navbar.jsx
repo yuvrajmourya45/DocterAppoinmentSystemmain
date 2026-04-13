@@ -32,8 +32,8 @@ const Navbar = () => {
         if (userStr) {
           newUser = typeof userStr === "string" ? JSON.parse(userStr) : userStr;
         } else {
-          userStr = localStorage.getItem("user");
-          newUser = userStr && userStr !== "undefined" ? JSON.parse(userStr) : null;
+          const localUserStr = localStorage.getItem("user");
+          newUser = localUserStr && localUserStr !== "undefined" ? JSON.parse(localUserStr) : null;
         }
       } catch (e) {
         console.error("Error parsing user:", e);
