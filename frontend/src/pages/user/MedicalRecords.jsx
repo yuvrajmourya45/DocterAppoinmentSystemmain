@@ -398,7 +398,7 @@ const MedicalRecords = () => {
                     </div>
                     <div className="flex items-center gap-2 ml-4">
                       <a 
-                        href={`${API.defaults.baseURL}/uploads/medical-records/${record.file}`} 
+                        href={record.file?.startsWith('http') ? record.file : `${API.defaults.baseURL}/uploads/medical-records/${record.file}`} 
                         target="_blank" 
                         rel="noreferrer" 
                         className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm"
