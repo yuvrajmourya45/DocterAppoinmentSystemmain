@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import API from '../utils/api';
 
 const AdminPatientDetails = () => {
   const { patientId } = useParams();
@@ -17,10 +17,10 @@ const AdminPatientDetails = () => {
       const token = localStorage.getItem('adminToken');
       
       const [recordsRes, appointmentsRes] = await Promise.all([
-        axios.get(`http://localhost:8000/api/admin/patients/${patientId}/medical-records`, {
+        API.get(`/api/admin/patients/${patientId}/medical-records`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get(`http://localhost:8000/api/admin/patients/${patientId}/appointments`, {
+        API.get(`/api/admin/patients/${patientId}/appointments`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -39,7 +39,7 @@ const AdminPatientDetails = () => {
     
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.delete(`http://localhost:8000/api/admin/patients/${patientId}/records/${recordId}`, {
+      await API.delete(`/api/admin/patients/${patientId}/records/${recordId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchPatientData();
@@ -93,7 +93,7 @@ const AdminPatientDetails = () => {
                 </div>
                 <div className="flex gap-2">
                   <a 
-                    href={`http://localhost:8000/${record.filePath}`} 
+                    href={`${import.meta.env.VITE_BACKEND_URL || 'https://docterappoinmentsystemmain.onrender.com'}/${record.filePath}`} 
                     target="_blank" 
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                   >

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import API from '../utils/api';
 
 const MedicalRecords = () => {
   const [file, setFile] = useState(null);
@@ -20,7 +20,7 @@ const MedicalRecords = () => {
   const fetchRecords = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:8000/api/medical-records/my-records', {
+      const res = await API.get('/api/medical-records/my-records', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRecords(res.data.records || []);
@@ -41,7 +41,7 @@ const MedicalRecords = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:8000/api/medical-records/upload', formData, {
+      await API.post('/api/medical-records/upload', formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -62,7 +62,7 @@ const MedicalRecords = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.put('http://localhost:8000/api/medical-records/medical-history', history, {
+      await API.put('/api/medical-records/medical-history', history, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Medical history updated');
@@ -76,7 +76,7 @@ const MedicalRecords = () => {
     
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:8000/api/medical-records/records/${recordId}`, {
+      await API.delete(`/api/medical-records/records/${recordId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchRecords();
@@ -190,7 +190,7 @@ const MedicalRecords = () => {
                 </div>
                 <div className="flex gap-2">
                   <a 
-                    href={`http://localhost:8000/${record.filePath}`} 
+                    href={`${import.meta.env.VITE_BACKEND_URL || 'https://docterappoinmentsystemmain.onrender.com'}/${record.filePath}`} 
                     target="_blank"
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                   >
