@@ -1,17 +1,33 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
+import API from '../utils/api';
 
 const TopDoctor = () => {
   const navigate = useNavigate()
-  const { doctors, backendUrl } = useContext(AppContext)
+  const { doctors, doctorsLoading } = useContext(AppContext)
+
+  if (doctorsLoading) return (
+    <div className='flex flex-col items-center gap-4 my-8 lg:my-16 px-4'>
+      <h1 className='text-2xl lg:text-3xl font-medium'>Top Doctors to Book</h1>
+      <div className='w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-5'>
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className='border border-gray-200 rounded-xl overflow-hidden animate-pulse'>
+            <div className='bg-gray-200 w-full h-40 lg:h-48'></div>
+            <div className='p-3'>
+              <div className='h-3 bg-gray-200 rounded mb-2'></div>
+              <div className='h-3 bg-gray-200 rounded w-2/3'></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 
   return (
     <div className='flex flex-col items-center gap-4 my-8 lg:my-16 text-gray-900 px-4 lg:px-10'>
       <h1 className='text-2xl lg:text-3xl font-medium text-center'>Top Doctors to Book</h1>
-      <p className='sm:w-1/3 text-center text-sm lg:text-base'>
-        Simply browse through our extensive list of trusted doctors.
-      </p>
+      <p className='sm:w-1/3 text-center text-sm lg:text-base'>Simply browse through our extensive list of trusted doctors.</p>
 
       {doctors && doctors.length > 0 ? (
         <div className='w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 lg:gap-5 pt-3 lg:pt-5'>
@@ -23,19 +39,14 @@ const TopDoctor = () => {
             >
               <img
                 className='bg-blue-50 w-full h-40 lg:h-48 object-cover'
-                src={item.image?.startsWith('http') ? item.image.replace('/uploads//uploads/', '/uploads/') : 
-                     item.image ? `http://localhost:8000${item.image}` : 
-                     'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkRvY3RvciBJbWFnZTwvdGV4dD48L3N2Zz4='}
+                src={item.image?.startsWith('http') ? item.image : item.image ? `${API.defaults.baseURL}${item.image}` : ''}
                 alt={item.name}
-                onError={(e) => {
-                  e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkRvY3RvciBJbWFnZTwvdGV4dD48L3N2Zz4=';
-                }}
+                onError={(e) => { e.target.style.display = 'none'; }}
               />
-
               <div className='p-3 lg:p-4'>
-                <div className='flex items-center gap-2 text-xs lg:text-sm text-green-500'>
-                  <p className='w-2 h-2 bg-green-500 rounded-full'></p>
-                  <p>Available</p>
+                <div className={`flex items-center gap-2 text-xs lg:text-sm ${item.available ? 'text-green-500' : 'text-red-500'}`}>
+                  <p className={`w-2 h-2 rounded-full ${item.available ? 'bg-green-500' : 'bg-red-500'}`}></p>
+                  <p>{item.available ? 'Available' : 'Away'}</p>
                 </div>
                 <p className='font-medium text-base lg:text-lg text-gray-900 truncate'>{item.name}</p>
                 <p className='text-gray-600 text-sm truncate'>{item.speciality}</p>
@@ -45,13 +56,7 @@ const TopDoctor = () => {
         </div>
       ) : (
         <div className='w-full text-center py-10'>
-          <div className='bg-gray-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4'>
-            <svg className='w-10 h-10 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' />
-            </svg>
-          </div>
-          <h3 className='text-xl font-semibold text-gray-700 mb-2'>No Doctors Available</h3>
-          <p className='text-gray-500 mb-4'>Please contact admin to add doctors to the system.</p>
+          <p className='text-gray-500'>No doctors available yet.</p>
         </div>
       )}
 

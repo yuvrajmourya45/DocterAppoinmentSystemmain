@@ -1,46 +1,36 @@
 import React, { createContext, useState, useEffect } from "react";
 import API from "../utils/api";
-import { doctors as localDoctors } from "../assets/assets_frontend/assets";
-
-console.log("✅ VITE_BACKEND_URL:", import.meta.env.VITE_BACKEND_URL);
 
 export const AppContext = createContext();
 
 const AppContextProvider = ({ children }) => {
   const [doctors, setDoctors] = useState([]);
+  const [doctorsLoading, setDoctorsLoading] = useState(true);
   const [userMedicalRecords, setUserMedicalRecords] = useState([]);
   const currencySymbol = "$";
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://docterappoinmentsystemmain.onrender.com";
 
   const getDoctorsData = async () => {
     try {
+      setDoctorsLoading(true);
       const { data } = await API.get("/api/doctors");
-      console.log('Doctors data from backend:', data);
-      if (data && data.length > 0) {
-        setDoctors(data);
-        console.log('✅ Using backend doctors:', data.length);
-      } else {
-        console.log('❌ No doctors found in backend');
-        setDoctors([]);
-      }
+      setDoctors(data || []);
     } catch (error) {
-      console.log('❌ Error fetching doctors:', error);
       setDoctors([]);
+    } finally {
+      setDoctorsLoading(false);
     }
   };
 
   const getUserMedicalRecords = async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
-    
     try {
       const { data } = await API.get("/api/medical-records/my-records", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUserMedicalRecords(data || []);
-      console.log('✅ Medical records loaded:', data?.length || 0);
     } catch (error) {
-      console.log('❌ Error fetching medical records:', error);
       setUserMedicalRecords([]);
     }
   };
@@ -48,32 +38,15 @@ const AppContextProvider = ({ children }) => {
   const bookAppointmentWithRecords = async (appointmentData) => {
     const token = localStorage.getItem('token');
     if (!token) throw new Error('Please login first');
-
-    try {
-      // Book appointment with medical records info
-      const appointmentPayload = {
-        ...appointmentData,
-        hasMedicalRecords: userMedicalRecords.length > 0,
-        medicalRecordsCount: userMedicalRecords.length
-      };
-
-      const response = await API.post("/api/appointments", appointmentPayload, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      console.log('✅ Appointment booked with medical records info:', {
-        appointmentId: response.data._id,
-        medicalRecords: userMedicalRecords.length
-      });
-
-      return response.data;
-    } catch (error) {
-      console.log('❌ Error booking appointment:', error);
-      throw error;
-    }
+    const appointmentPayload = {
+      ...appointmentData,
+      hasMedicalRecords: userMedicalRecords.length > 0,
+      medicalRecordsCount: userMedicalRecords.length
+    };
+    const response = await API.post("/api/appointments", appointmentPayload, {
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+    });
+    return response.data;
   };
 
   useEffect(() => {
@@ -83,6 +56,7 @@ const AppContextProvider = ({ children }) => {
 
   const value = {
     doctors,
+    doctorsLoading,
     currencySymbol,
     getDoctorsData,
     backendUrl,
