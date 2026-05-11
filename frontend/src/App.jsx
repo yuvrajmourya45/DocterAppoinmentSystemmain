@@ -52,6 +52,12 @@ const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Ping backend on app load to wake up Render
+  useEffect(() => {
+    fetch('https://docterappoinmentsystemmain.onrender.com/api/debug')
+      .catch(() => {});
+  }, []);
+
   // Get user data from localStorage
   const userStr = localStorage.getItem("user");
   const user = (userStr && userStr !== "undefined") ? JSON.parse(userStr) : {};
