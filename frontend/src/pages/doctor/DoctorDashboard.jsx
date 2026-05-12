@@ -12,14 +12,12 @@ import {
   Stethoscope,
   LayoutDashboard,
   LogOut,
-  History,
-  FolderOpen
+  History
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NotificationCenter from "../../components/NotificationCenter";
 import { useNotifications } from "../../hooks/useNotifications";
 import PatientHistory from "./PatientHistory";
-import PatientMedicalRecords from "../../components/PatientMedicalRecords";
 import API from "../../utils/api";
 
 const DoctorDashboard = () => {
@@ -33,8 +31,7 @@ const DoctorDashboard = () => {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({});
   const [imageFile, setImageFile] = useState(null);
-  const [selectedPatient, setSelectedPatient] = useState(null);
-  const [patientsWithRecords, setPatientsWithRecords] = useState([]);
+
 
   const token = localStorage.getItem("token");
   const userData = JSON.parse(localStorage.getItem("doctor") || localStorage.getItem("user") || "{}");
@@ -104,55 +101,6 @@ const DoctorDashboard = () => {
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
   }, [doctorId]);
-
-  useEffect(() => {
-    if (activeTab === 'records') {
-      fetchPatientsWithRecords();
-    }
-  }, [activeTab]);
-
-  const fetchPatientsWithRecords = async () => {
-    try {
-      const confirmedAppointments = appointments.filter(apt => 
-        (apt.status === 'confirmed' || apt.status === 'completed') && apt.user
-      );
-      
-      // Group by patient and get latest appointment
-      const patientMap = new Map();
-      confirmedAppointments.forEach(apt => {
-        const existing = patientMap.get(apt.user._id);
-        if (!existing || new Date(apt.date) > new Date(existing.date)) {
-          patientMap.set(apt.user._id, {
-            ...apt.user,
-            appointmentDate: apt.date,
-            appointmentTime: apt.time,
-            appointmentStatus: apt.status
-          });
-        }
-      });
-      
-      // Filter patients who have medical records
-      const patientsArray = Array.from(patientMap.values());
-      const patientsWithActiveRecords = [];
-      
-      for (const patient of patientsArray) {
-        try {
-          const res = await API.get(`/api/medical-records/user/${patient._id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          if (res.data && res.data.length > 0) {
-            patientsWithActiveRecords.push(patient);
-          }
-        } catch (error) {
-          console.error('Error checking records for patient:', patient._id);
-        }
-      }
-      
-      setPatientsWithRecords(patientsWithActiveRecords);
-    } catch (error) {
-      console.error('Error fetching patients:', error);
-    }
-  };
 
   const toggleAvailability = async () => {
     try {
@@ -251,7 +199,6 @@ const DoctorDashboard = () => {
           {[
             { id: "overview", label: "Overview", icon: <LayoutDashboard size={18} /> },
             { id: "appointments", label: "Appointments", icon: <Calendar size={18} /> },
-            { id: "records", label: "Patient Records", icon: <FolderOpen size={18} /> },
             { id: "history", label: "Patient History", icon: <History size={18} /> },
             { id: "profile", label: "Clinic Profile", icon: <User size={18} /> },
           ].map((item) => (
@@ -298,7 +245,7 @@ const DoctorDashboard = () => {
               <Menu size={20} />
             </button>
             <div className="flex items-center gap-4 flex-1 sm:flex-initial">
-              <h2 className="text-lg sm:text-xl lg:text-2xl font-black text-slate-800 capitalize">{activeTab === "overview" ? "Dashboard Overview" : activeTab === "appointments" ? "Appointments" : activeTab === "records" ? "Patient Records" : activeTab === "history" ? "Patient History" : "Clinic Profile"}</h2>
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-black text-slate-800 capitalize">{activeTab === "overview" ? "Dashboard Overview" : activeTab === "appointments" ? "Appointments" : activeTab === "history" ? "Patient History" : "Clinic Profile"}</h2>
               <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${available ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{available ? "Available" : "Unavailable"}</div>
             </div>
           </div>
@@ -524,18 +471,6 @@ const DoctorDashboard = () => {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          {appointment.hasMedicalRecords && (
-                            <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold mb-2">
-                              <span>📋</span>
-                              <span>{appointment.medicalRecordsCount} Record{appointment.medicalRecordsCount > 1 ? 's' : ''}</span>
-                            </div>
-                          )}
-                          {!appointment.hasMedicalRecords && (
-                            <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs font-bold mb-2">
-                              <span>📄</span>
-                              <span>No Records</span>
-                            </div>
-                          )}
                           {appointment.status === 'pending' && (
                             <>
                               <button 
@@ -553,23 +488,12 @@ const DoctorDashboard = () => {
                             </>
                           )}
                           {appointment.status === 'confirmed' && (
-                            <>
-                              <button 
-                                onClick={() => {
-                                  setSelectedPatient(appointment.user?._id);
-                                  setActiveTab('records');
-                                }}
-                                className="flex-1 px-3 py-2 bg-purple-500 text-white rounded-lg text-xs font-bold hover:bg-purple-600 transition-colors"
-                              >
-                                View Records
-                              </button>
-                              <button 
-                                onClick={() => handleAppointmentAction(appointment._id, 'completed')}
-                                className="flex-1 px-3 py-2 bg-blue-500 text-white rounded-lg text-xs font-bold hover:bg-blue-600 transition-colors"
-                              >
-                                Complete
-                              </button>
-                            </>
+                            <button 
+                              onClick={() => handleAppointmentAction(appointment._id, 'completed')}
+                              className="flex-1 px-3 py-2 bg-blue-500 text-white rounded-lg text-xs font-bold hover:bg-blue-600 transition-colors"
+                            >
+                              Complete
+                            </button>
                           )}
                         </div>
                       </div>
@@ -605,29 +529,6 @@ const DoctorDashboard = () => {
                         <td className="p-4"><div className={`px-3 py-1 rounded-full text-xs font-bold uppercase inline-block ${appointment.status === 'completed' ? 'bg-green-100 text-green-700' : appointment.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>{appointment.status}</div></td>
                         <td className="p-4">
                           <div className="flex gap-2">
-                            {appointment.hasMedicalRecords && (
-                              <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
-                                <span>📋</span>
-                                <span>{appointment.medicalRecordsCount} Record{appointment.medicalRecordsCount > 1 ? 's' : ''}</span>
-                              </div>
-                            )}
-                            {!appointment.hasMedicalRecords && (
-                              <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs font-bold">
-                                <span>📄</span>
-                                <span>No Records</span>
-                              </div>
-                            )}
-                            {appointment.status === 'confirmed' && (
-                              <button 
-                                onClick={() => {
-                                  setSelectedPatient(appointment.user?._id);
-                                  setActiveTab('records');
-                                }}
-                                className="px-3 py-1 bg-purple-500 text-white rounded-lg text-xs font-bold hover:bg-purple-600 transition-colors"
-                              >
-                                View Records
-                              </button>
-                            )}
                             {appointment.status === 'pending' && (
                               <>
                                 <button 
@@ -659,66 +560,6 @@ const DoctorDashboard = () => {
                   </tbody>
                 </table>
               </div>
-            </div>
-          )}
-
-          {activeTab === "records" && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
-              <div className="p-4 sm:p-6 border-b border-slate-100">
-                <h3 className="text-lg sm:text-xl font-black text-slate-800">Patient Medical Records</h3>
-                <p className="text-sm text-slate-500 mt-1">View medical records of patients with confirmed appointments</p>
-              </div>
-              
-              {patientsWithRecords.length === 0 ? (
-                <div className="p-12 text-center">
-                  <FolderOpen className="mx-auto text-slate-300 mb-4" size={64} />
-                  <h3 className="text-xl font-bold text-slate-600 mb-2">No Patients Yet</h3>
-                  <p className="text-slate-500">Patients with confirmed appointments will appear here</p>
-                </div>
-              ) : (
-                <div className="p-4 sm:p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {patientsWithRecords.map((patient) => (
-                      <div 
-                        key={patient._id}
-                        onClick={() => setSelectedPatient(patient._id)}
-                        className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-100 hover:shadow-lg transition-all cursor-pointer group"
-                      >
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg">
-                            {patient.name?.charAt(0) || 'P'}
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{patient.name}</h4>
-                            <p className="text-xs text-slate-500 truncate">{patient.email}</p>
-                          </div>
-                        </div>
-                        
-                        {patient.appointmentDate && (
-                          <div className="bg-white/60 rounded-lg p-2 mb-3">
-                            <div className="flex items-center gap-2 text-xs text-slate-600">
-                              <Calendar size={14} className="text-blue-600" />
-                              <span className="font-medium">{patient.appointmentDate}</span>
-                              <Clock size={14} className="text-blue-600 ml-1" />
-                              <span className="font-medium">{patient.appointmentTime}</span>
-                            </div>
-                            <div className="mt-1">
-                              <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${patient.appointmentStatus === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                {patient.appointmentStatus === 'completed' ? 'Completed' : 'Confirmed'}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                        
-                        <button className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                          <FolderOpen size={16} />
-                          View Records
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
@@ -804,12 +645,6 @@ const DoctorDashboard = () => {
         </div>
       </main>
 
-      {selectedPatient && (
-        <PatientMedicalRecords 
-          patientId={selectedPatient} 
-          onClose={() => setSelectedPatient(null)} 
-        />
-      )}
     </div>
   );
 };
