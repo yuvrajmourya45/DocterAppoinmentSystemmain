@@ -46,9 +46,18 @@ const Appointment = () => {
   }, [navigate]);
 
   useEffect(() => {
-    const doc = doctors.find((d) => d._id === docId);
-    setDocInfo(doc);
-  }, [doctors, docId]);
+    const fetchFreshDoctor = async () => {
+      try {
+        const res = await API.get(`/api/doctors`);
+        const doc = res.data.find((d) => d._id === docId);
+        setDocInfo(doc);
+      } catch {
+        const doc = doctors.find((d) => d._id === docId);
+        setDocInfo(doc);
+      }
+    };
+    fetchFreshDoctor();
+  }, [docId]);
 
   useEffect(() => {
     if (!docInfo) return;
