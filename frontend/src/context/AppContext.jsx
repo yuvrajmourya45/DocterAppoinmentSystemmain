@@ -13,7 +13,7 @@ const AppContextProvider = ({ children }) => {
     try {
       setDoctorsLoading(true);
       const { data } = await API.get("/api/doctors");
-      setDoctors(data || []);
+      setDoctors((data || []).map(d => ({ ...d, available: d.available !== false })));
     } catch (error) {
       setDoctors([]);
     } finally {
