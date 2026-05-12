@@ -6,7 +6,6 @@ import Home from "./pages/user/Home";
 import Docters from "./pages/user/Docters";
 import MyProfile from "./pages/user/MyProfile";
 import MyAppointment from "./pages/user/MyAppointment";
-import MedicalRecords from "./pages/user/MedicalRecords";
 import Login from "./pages/user/Login";
 import Register from "./pages/user/Register";
 import About from "./pages/user/About";
@@ -124,22 +123,7 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/medical-records"
-          element={
-            <ProtectedRoute>
-              <MedicalRecords />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/appointment/:docId"
-          element={
-            <ProtectedRoute>
-              <Appointment />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/appointment/:docId" element={<ProtectedRoute><Appointment /></ProtectedRoute>} />
 
         {/* ========== ADMIN PROTECTED ROUTES ========== */}
         <Route

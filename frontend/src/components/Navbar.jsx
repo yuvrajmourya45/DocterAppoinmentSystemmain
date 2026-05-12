@@ -158,15 +158,6 @@ const Navbar = () => {
                   >
                     My Appointments
                   </button>
-                  <button
-                    onClick={() => {
-                      setDropdownOpen(false);
-                      navigate("/medical-records");
-                    }} 
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer transition-colors"
-                  >
-                    Medical Records
-                  </button>
                   <div className="border-t border-gray-100 my-1"></div>
                   <button
                     onClick={() => {

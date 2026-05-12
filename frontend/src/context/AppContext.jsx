@@ -6,7 +6,6 @@ export const AppContext = createContext();
 const AppContextProvider = ({ children }) => {
   const [doctors, setDoctors] = useState([]);
   const [doctorsLoading, setDoctorsLoading] = useState(true);
-  const [userMedicalRecords, setUserMedicalRecords] = useState([]);
   const currencySymbol = "$";
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://docterappoinmentsystemmain.onrender.com";
 
@@ -22,28 +21,10 @@ const AppContextProvider = ({ children }) => {
     }
   };
 
-  const getUserMedicalRecords = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    try {
-      const { data } = await API.get("/api/medical-records/my-records", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setUserMedicalRecords(data || []);
-    } catch (error) {
-      setUserMedicalRecords([]);
-    }
-  };
-
-  const bookAppointmentWithRecords = async (appointmentData) => {
+  const bookAppointment = async (appointmentData) => {
     const token = localStorage.getItem('token');
     if (!token) throw new Error('Please login first');
-    const appointmentPayload = {
-      ...appointmentData,
-      hasMedicalRecords: userMedicalRecords.length > 0,
-      medicalRecordsCount: userMedicalRecords.length
-    };
-    const response = await API.post("/api/appointments", appointmentPayload, {
+    const response = await API.post("/api/appointments", appointmentData, {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -51,7 +32,6 @@ const AppContextProvider = ({ children }) => {
 
   useEffect(() => {
     getDoctorsData();
-    getUserMedicalRecords();
   }, []);
 
   const value = {
@@ -60,9 +40,7 @@ const AppContextProvider = ({ children }) => {
     currencySymbol,
     getDoctorsData,
     backendUrl,
-    userMedicalRecords,
-    getUserMedicalRecords,
-    bookAppointmentWithRecords
+    bookAppointment
   };
 
   return (

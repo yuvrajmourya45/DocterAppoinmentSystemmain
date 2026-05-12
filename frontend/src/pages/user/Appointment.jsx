@@ -7,7 +7,7 @@ import API from "../../utils/api";
 
 const Appointment = () => {
   const { docId } = useParams();
-  const { doctors, currencySymbol, backendUrl, bookAppointmentWithRecords, userMedicalRecords } = useContext(AppContext);
+  const { doctors, currencySymbol, backendUrl, bookAppointment } = useContext(AppContext);
   const navigate = useNavigate();
   const daysOfWeek = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
@@ -18,28 +18,11 @@ const Appointment = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [bookedSlots, setBookedSlots] = useState([]);
   const [completedSlots, setCompletedSlots] = useState([]);
-  const [hasConfirmedAppointments, setHasConfirmedAppointments] = useState(false);
 
-  const checkConfirmedAppointments = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    
-    try {
-      const res = await fetch(`${API.defaults.baseURL}/api/appointments`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const appointments = await res.json();
-      const confirmed = appointments.filter(apt => 
-        apt.status === 'confirmed' || apt.status === 'completed'
-      );
-      setHasConfirmedAppointments(confirmed.length > 0);
-    } catch (error) {
-      console.error('Error checking appointments:', error);
-    }
-  };
-
-  // Check if time slot is during a break
-  const isBreakTime = (time) => {
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) navigate("/login");
+  }, [navigate]);
     if (!docInfo?.workingHours?.breaks?.length) return false;
     
     const convertTo24 = (timeStr) => {
@@ -161,19 +144,10 @@ const Appointment = () => {
       time: slotTime,
     };
 
-    console.log('📅 Booking appointment with data:', appointmentData);
-    console.log('🏥 Doctor ID being sent:', docInfo._id);
-    console.log('📋 Medical records available:', userMedicalRecords.length);
-
     try {
-      const data = await bookAppointmentWithRecords(appointmentData);
-      console.log('✅ Booking response:', data);
-
+      await bookAppointment(appointmentData);
       setShowPopup(true);
-      setTimeout(() => {
-        setShowPopup(false);
-        navigate("/my-appointments");
-      }, 2000);
+      setTimeout(() => { setShowPopup(false); navigate("/my-appointments"); }, 2000);
     } catch (err) {
       alert(err.response?.data?.message || err.message || "Booking failed");
     }
@@ -252,117 +226,6 @@ const Appointment = () => {
         </div>
       </div>
 
-      {/* Medical Records Status Section */}
-      <div className="mt-8 mb-8">
-        {/* Confirmed Appointments Warning */}
-        {hasConfirmedAppointments && userMedicalRecords.length > 0 && (
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-400 rounded-2xl p-6 mb-6 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center">
-                  <span className="text-amber-600 text-xl">🔒</span>
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-amber-900 mb-3">Medical Records Temporarily Locked</h3>
-                <div className="text-sm text-amber-800 space-y-2 mb-4">
-                  <p className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-amber-600 rounded-full"></span>
-                    Records are protected during confirmed appointments
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-amber-600 rounded-full"></span>
-                    Upload new records after appointments are completed
-                  </p>
-                </div>
-                <div className="bg-amber-100 rounded-xl p-4">
-                  <p className="text-amber-800 text-sm font-medium">
-                    💡 All your existing <strong>{userMedicalRecords.length} medical record{userMedicalRecords.length > 1 ? 's' : ''}</strong> will be available to this doctor when you book.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Medical Records Available */}
-        {userMedicalRecords.length > 0 && (
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400 rounded-2xl p-6 mb-6 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center">
-                  <span className="text-green-600 text-xl">✓</span>
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-green-900 mb-3">Medical Records Ready</h3>
-                <div className="text-sm text-green-800 space-y-2 mb-4">
-                  <p className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
-                    <strong>{userMedicalRecords.length} medical record{userMedicalRecords.length > 1 ? 's' : ''}</strong> uploaded and ready
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
-                    Doctor will automatically access your documents
-                  </p>
-                </div>
-                <div className="bg-green-100 rounded-xl p-4">
-                  <h4 className="font-semibold text-green-900 mb-2 text-sm">Available Records:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {userMedicalRecords.slice(0, 4).map((record, index) => (
-                      <span key={index} className="inline-flex items-center gap-1 text-xs bg-green-200 text-green-800 px-3 py-1.5 rounded-full font-medium">
-                        <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
-                        {record.title}
-                      </span>
-                    ))}
-                    {userMedicalRecords.length > 4 && (
-                      <span className="inline-flex items-center gap-1 text-xs bg-green-200 text-green-800 px-3 py-1.5 rounded-full font-medium">
-                        <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
-                        +{userMedicalRecords.length - 4} more
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* No Medical Records */}
-        {userMedicalRecords.length === 0 && !hasConfirmedAppointments && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 rounded-2xl p-6 mb-6 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
-                  <span className="text-blue-600 text-xl">📋</span>
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-blue-900 mb-3">Upload Medical Records</h3>
-                <div className="text-sm text-blue-800 space-y-2 mb-4">
-                  <p className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
-                    Upload reports for better consultation
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
-                    Doctor can review documents before appointment
-                  </p>
-                </div>
-                <div className="bg-blue-100 rounded-xl p-4">
-                  <button 
-                    onClick={() => navigate('/medical-records')}
-                    className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all transform hover:scale-105 shadow-sm"
-                  >
-                    <span className="text-base">📤</span>
-                    Upload Records Now
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
       <div className="mt-8 sm:mt-12 bg-white rounded-3xl p-4 sm:p-8 border border-gray-100 shadow-sm">
         <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
           <div className="w-1.5 h-4 sm:h-6 bg-blue-600 rounded-full"></div>
