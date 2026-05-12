@@ -159,6 +159,7 @@ const Navbar = () => {
                     My Appointments
                   </button>
                   <div className="border-t border-gray-100 my-1"></div>
+
                   <button
                     onClick={() => {
                       setDropdownOpen(false);
