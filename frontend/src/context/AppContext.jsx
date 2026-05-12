@@ -13,7 +13,7 @@ const AppContextProvider = ({ children }) => {
     try {
       setDoctorsLoading(true);
       const { data } = await API.get("/api/doctors");
-      setDoctors((data || []).map(d => ({ ...d, available: d.available !== false })));
+      setDoctors(data || []);
     } catch (error) {
       setDoctors([]);
     } finally {
@@ -32,6 +32,9 @@ const AppContextProvider = ({ children }) => {
 
   useEffect(() => {
     getDoctorsData();
+    // Render cold start fix - refetch after 5s to get accurate availability
+    const timer = setTimeout(() => getDoctorsData(), 5000);
+    return () => clearTimeout(timer);
   }, []);
 
   const value = {
