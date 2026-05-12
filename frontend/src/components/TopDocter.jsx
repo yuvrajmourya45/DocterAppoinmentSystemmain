@@ -44,9 +44,9 @@ const TopDoctor = () => {
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
               <div className='p-3 lg:p-4'>
-                <div className={`flex items-center gap-2 text-xs lg:text-sm ${item.available ? 'text-green-500' : 'text-red-500'}`}>
-                  <p className={`w-2 h-2 rounded-full ${item.available ? 'bg-green-500' : 'bg-red-500'}`}></p>
-                  <p>{item.available ? 'Available' : 'Away'}</p>
+                <div className={`flex items-center gap-2 text-xs lg:text-sm ${item.available !== false ? 'text-green-500' : 'text-red-500'}`}>
+                  <p className={`w-2 h-2 rounded-full ${item.available !== false ? 'bg-green-500' : 'bg-red-500'}`}></p>
+                  <p>{item.available !== false ? 'Available' : 'Away'}</p>
                 </div>
                 <p className='font-medium text-base lg:text-lg text-gray-900 truncate'>{item.name}</p>
                 <p className='text-gray-600 text-sm truncate'>{item.speciality}</p>

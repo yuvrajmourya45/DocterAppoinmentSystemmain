@@ -75,12 +75,12 @@ const Docters = () => {
                   {/* Doctor info */}
                   <div className="p-3 sm:p-4">
                     <div className={`flex items-center gap-2 text-sm mb-2 ${
-                      item.available ? 'text-green-500' : 'text-red-500'
+                      item.available !== false ? 'text-green-500' : 'text-red-500'
                     }`}>
                       <span className={`w-2 h-2 rounded-full ${
-                        item.available ? 'bg-green-500' : 'bg-red-500'
+                        item.available !== false ? 'bg-green-500' : 'bg-red-500'
                       }`}></span>
-                      <p>{item.available ? 'Available' : 'Away'}</p>
+                      <p>{item.available !== false ? 'Available' : 'Away'}</p>
                       {item.isVerified && <span className="ml-auto text-blue-600 text-xs font-semibold">✓ Verified</span>}
                     </div>
                     <p className="font-medium text-base sm:text-lg text-gray-900">{item.name}</p>
