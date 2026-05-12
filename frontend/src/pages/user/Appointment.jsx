@@ -19,12 +19,8 @@ const Appointment = () => {
   const [bookedSlots, setBookedSlots] = useState([]);
   const [completedSlots, setCompletedSlots] = useState([]);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) navigate("/login");
-  }, [navigate]);
+  const isBreakTime = (time) => {
     if (!docInfo?.workingHours?.breaks?.length) return false;
-    
     const convertTo24 = (timeStr) => {
       if (timeStr.includes(' ')) {
         const [t, period] = timeStr.split(' ');
@@ -36,9 +32,7 @@ const Appointment = () => {
       const [hours, minutes] = timeStr.split(':').map(Number);
       return hours * 60 + minutes;
     };
-    
     const slotTime = convertTo24(time);
-    
     return docInfo.workingHours.breaks.some(brk => {
       const breakStart = convertTo24(brk.start);
       const breakEnd = convertTo24(brk.end);
@@ -49,9 +43,6 @@ const Appointment = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) navigate("/login");
-    
-    // Check for confirmed appointments
-    checkConfirmedAppointments();
   }, [navigate]);
 
   useEffect(() => {
