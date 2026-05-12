@@ -14,7 +14,6 @@ import doctorRouter from "./routes/doctorRoute.js";
 import userRoute from "./routes/userRoute.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
-import medicalRecordRoutes from "./routes/medicalRecordRoutes.js";
 
 // Models
 import doctorModel from "./models/DoctorModel.js";
@@ -69,7 +68,6 @@ app.use("/api/admin", adminRouter);
 app.use("/api/doctor", doctorRouter);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/notifications", notificationRoutes);
-app.use("/api/medical-records", medicalRecordRoutes);
 
 // Public Doctors Endpoint
 app.get("/api/doctors", async (req, res) => {
