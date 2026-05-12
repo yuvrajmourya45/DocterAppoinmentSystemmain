@@ -9,15 +9,18 @@ const AppContextProvider = ({ children }) => {
   const currencySymbol = "$";
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://docterappoinmentsystemmain.onrender.com";
 
-  const getDoctorsData = async () => {
+  const getDoctorsData = async (showLoading = true) => {
     try {
-      setDoctorsLoading(true);
+      if (showLoading) setDoctorsLoading(true);
       const { data } = await API.get("/api/doctors");
-      setDoctors(data || []);
+      // Only update if we got actual data (avoid clearing on cold start empty response)
+      if (data && data.length > 0) {
+        setDoctors(data);
+      }
     } catch (error) {
-      setDoctors([]);
+      // keep existing data on error
     } finally {
-      setDoctorsLoading(false);
+      if (showLoading) setDoctorsLoading(false);
     }
   };
 
@@ -31,10 +34,11 @@ const AppContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    getDoctorsData();
-    // Render cold start fix - refetch after 5s to get accurate availability
-    const timer = setTimeout(() => getDoctorsData(), 5000);
-    return () => clearTimeout(timer);
+    getDoctorsData(true);
+    // Refetch after 3s and 7s to handle Render cold start
+    const t1 = setTimeout(() => getDoctorsData(false), 3000);
+    const t2 = setTimeout(() => getDoctorsData(false), 7000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
   const value = {
